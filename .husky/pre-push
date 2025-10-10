@@ -1,0 +1,23 @@
+# Récupérer la branche de destination
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "🚫 Tentative de push vers la branche main détectée"
+    
+    # Vérifier si c'est un push force
+    if [ "$local_sha" != "$remote_sha" ]; then
+      echo "❌ ERREUR: Push force détecté vers la branche main!"
+      echo "   Les push force vers main sont interdits."
+      echo "   Utilisez une Pull Request pour proposer vos changements."
+      exit 1
+    fi
+    
+    # Vérifier si l'utilisateur est admin (vous pouvez personnaliser cette logique)
+    # Pour l'instant, on empêche tous les push directs vers main
+    echo "❌ ERREUR: Push direct vers la branche main interdit!"
+    echo "   Seuls les administrateurs peuvent pusher directement vers main."
+    echo "   Utilisez une Pull Request pour proposer vos changements."
+    exit 1
+  fi
+done
+
+echo "✅ Push autorisé vers la branche de destination"

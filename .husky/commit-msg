@@ -1,0 +1,2 @@
+# Vérifier le format du message de commit avec commitlint
+npx --no -- commitlint --edit $1
