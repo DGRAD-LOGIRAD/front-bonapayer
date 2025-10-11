@@ -97,34 +97,34 @@ chore(deps): update dependencies
 
 ### 🔧 Scripts Disponibles
 
-**Gestionnaire de paquets :** Yarn
+**Gestionnaire de paquets :** pnpm
 
 ```bash
 # Développement
-yarn dev
+pnpm dev
 
 # Build
-yarn build
+pnpm build
 
 # Linting
-yarn lint          # Vérifier le code
-yarn lint:fix      # Corriger automatiquement les erreurs de lint
+pnpm lint          # Vérifier le code
+pnpm lint:fix      # Corriger automatiquement les erreurs de lint
 
 # Formatage
-yarn format        # Formater tout le code
-yarn format:check  # Vérifier le formatage
+pnpm format        # Formater tout le code
+pnpm format:check  # Vérifier le formatage
 
 # Commit interactif
-yarn commit        # Utiliser commitizen pour des commits conventionnels
+pnpm commit        # Utiliser commitizen pour des commits conventionnels
 ```
 
 ### 🚀 Workflow de Développement
 
 1. **Créer une branche** depuis `main` ou `develop`
 2. **Développer** votre fonctionnalité en respectant l'architecture
-3. **Tester** localement avec `yarn dev`
-4. **Formater** le code avec `yarn format`
-5. **Vérifier** le linting avec `yarn lint`
+3. **Tester** localement avec `pnpm dev`
+4. **Formater** le code avec `pnpm format`
+5. **Vérifier** le linting avec `pnpm lint`
 6. **Commiter** avec un message conventionnel
 7. **Pusher** vers votre branche
 8. **Créer une Pull Request** vers `main` ou `develop`
@@ -153,17 +153,17 @@ yarn commit        # Utiliser commitizen pour des commits conventionnels
 
 ```bash
 # Installer un nouveau composant
-yarn dlx shadcn@latest add [component-name]
+pnpm dlx shadcn@latest add [component-name]
 
 # Exemples
-yarn dlx shadcn@latest add button
-yarn dlx shadcn@latest add input
-yarn dlx shadcn@latest add card
-yarn dlx shadcn@latest add dialog
-yarn dlx shadcn@latest add table
+pnpm dlx shadcn@latest add button
+pnpm dlx shadcn@latest add input
+pnpm dlx shadcn@latest add card
+pnpm dlx shadcn@latest add dialog
+pnpm dlx shadcn@latest add table
 
 # Lister les composants disponibles
-yarn dlx shadcn@latest add
+pnpm dlx shadcn@latest add
 ```
 
 #### Imports
@@ -198,6 +198,6 @@ Les hooks suivants sont configurés automatiquement :
 Si vous rencontrez des problèmes avec les hooks ou le formatage :
 
 1. Vérifiez que tous les hooks sont exécutables : `chmod +x .husky/*`
-2. Réinstallez les dépendances : `yarn install`
-3. Formatez manuellement : `yarn format`
-4. Vérifiez le linting : `yarn lint:fix`
+2. Réinstallez les dépendances : `pnpm install`
+3. Formatez manuellement : `pnpm format`
+4. Vérifiez le linting : `pnpm lint:fix`
