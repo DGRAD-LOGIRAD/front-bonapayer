@@ -8,7 +8,7 @@ function AuthLayout() {
         <div className='w-full max-w-7xl grid lg:grid-cols-2 gap-8 items-center'>
           <div className='text-white space-y-6'>
             <div className='flex flex-col items-center lg:items-start space-y-4'>
-              <div className='bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 shadow-2xl'>
+              <div className='bg-white rounded-2xl p-4 shadow-2xl'>
                 <img
                   src={dgradLogo}
                   alt='Logo DGRAD'
