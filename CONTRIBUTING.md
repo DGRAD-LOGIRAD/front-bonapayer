@@ -1,6 +1,52 @@
 # Guide de Contribution
 
-## Règles de Développement
+## Architecture du Projet
+
+### 📁 Structure des Dossiers
+
+```
+src/
+├── components/
+│   ├── forms/          # Formulaires (login, forgot-password, etc.)
+│   ├── shared/         # Composants partagés entre les pages
+│   └── ui/             # Composants Shadcn/UI (button, input, card, etc.)
+├── layout/             # Layouts (auth-layout, private-route, etc.)
+├── pages/              # Pages de l'application
+│   ├── auth/           # Pages d'authentification
+│   ├── dashboard/      # Pages du tableau de bord
+│   └── [feature]/      # Autres fonctionnalités avec sous-dossiers
+├── stores/             # Gestion d'état (Zustand, Redux, etc.)
+├── providers/          # Providers React (Query, Theme, etc.)
+├── lib/                # Utilitaires et configurations
+└── assets/             # Images, icônes, etc.
+```
+
+### 🎯 Conventions de Nommage
+
+#### Pages
+
+- **Structure** : `src/pages/[feature]/[page-name].tsx`
+- **Exemples** :
+  - `src/pages/auth/login.tsx`
+  - `src/pages/dashboard/profile.tsx`
+  - `src/pages/bons-a-payer/list.tsx`
+  - `src/pages/bons-a-payer/create.tsx`
+
+#### Composants
+
+- **Shared** : `src/components/shared/[ComponentName].tsx`
+- **Forms** : `src/components/forms/[form-name].tsx`
+- **UI** : `src/components/ui/[component-name].tsx`
+
+#### Stores
+
+- **Structure** : `src/stores/use[StoreName]Store.ts`
+- **Exemples** :
+  - `src/stores/useAuthStore.ts`
+  - `src/stores/useBonsStore.ts`
+  - `src/stores/useAppStore.ts`
+
+### 📋 Règles de Développement
 
 ### 🚫 Restrictions de Push
 
@@ -51,6 +97,8 @@ chore(deps): update dependencies
 
 ### 🔧 Scripts Disponibles
 
+**Gestionnaire de paquets :** pnpm
+
 ```bash
 # Développement
 pnpm dev
@@ -73,13 +121,62 @@ pnpm commit        # Utiliser commitizen pour des commits conventionnels
 ### 🚀 Workflow de Développement
 
 1. **Créer une branche** depuis `main` ou `develop`
-2. **Développer** votre fonctionnalité
+2. **Développer** votre fonctionnalité en respectant l'architecture
 3. **Tester** localement avec `pnpm dev`
 4. **Formater** le code avec `pnpm format`
 5. **Vérifier** le linting avec `pnpm lint`
 6. **Commiter** avec un message conventionnel
 7. **Pusher** vers votre branche
 8. **Créer une Pull Request** vers `main` ou `develop`
+
+### 🏗️ Bonnes Pratiques
+
+#### Création de Pages
+
+- **Toujours** créer un sous-dossier pour les fonctionnalités
+- **Exemple** : Pour "bons à payer" → `src/pages/bons-a-payer/`
+- **Pages liées** : `list.tsx`, `create.tsx`, `edit.tsx`, `details.tsx`
+
+#### Gestion des Stores
+
+- **Un store par domaine** : `useAuthStore`, `useBonsStore`
+- **Actions claires** : `login`, `logout`, `createBon`, `updateBon`
+- **Types TypeScript** : Toujours typer les états et actions
+
+#### Composants
+
+- **Shared** : Composants réutilisables dans toute l'app
+- **Forms** : Uniquement les formulaires
+- **UI** : Composants Shadcn/UI uniquement
+
+#### Installation de Composants Shadcn/UI
+
+```bash
+# Installer un nouveau composant
+pnpm dlx shadcn@latest add [component-name]
+
+# Exemples
+pnpm dlx shadcn@latest add button
+pnpm dlx shadcn@latest add input
+pnpm dlx shadcn@latest add card
+pnpm dlx shadcn@latest add dialog
+pnpm dlx shadcn@latest add table
+
+# Lister les composants disponibles
+pnpm dlx shadcn@latest add
+```
+
+#### Imports
+
+```typescript
+// ✅ Bon
+import { Button } from '@/components/ui/button';
+import { LoginForm } from '@/components/forms/login';
+import { Header } from '@/components/shared/header';
+
+// ❌ Éviter
+import { Button } from '../../components/ui/button';
+```
 
 ### ⚠️ Hooks Git
 
