@@ -1,11 +1,7 @@
-import { QueryProvider } from './providers';
+import { Outlet } from 'react-router-dom';
 
 function App() {
-  return (
-    <QueryProvider>
-      <h1>Frontend Bonapayer</h1>
-    </QueryProvider>
-  );
+  return <Outlet />;
 }
 
 export default App;
