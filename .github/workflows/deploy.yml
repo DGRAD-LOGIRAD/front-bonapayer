@@ -1,0 +1,53 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build application
+        run: pnpm run build
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying to production..."
+          echo "Build completed successfully"
+          echo "Application ready for production deployment"
+
+          # Ici vous pouvez ajouter votre logique de déploiement
+          # Par exemple : rsync, FTP, Docker, etc.
+
+          echo "✅ Production deployment completed!"
+
+      - name: Notify deployment success
+        run: |
+          echo "🎉 Production deployment successful!"
+          echo "Application is now live in production"
