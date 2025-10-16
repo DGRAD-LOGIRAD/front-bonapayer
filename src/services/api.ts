@@ -1,6 +1,27 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Configuration de l'URL API selon l'environnement
+const getApiBaseUrl = () => {
+  // Si une URL est définie dans les variables d'environnement, l'utiliser
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+
+  // En production, gérer les problèmes HTTPS/HTTP
+  if (import.meta.env.PROD) {
+    // Si on est en HTTPS, utiliser un proxy pour éviter Mixed Content
+    if (window.location.protocol === 'https:') {
+      // Utiliser un proxy CORS public (solution temporaire)
+      return 'https://cors-anywhere.herokuapp.com/http://69.62.105.205:8080/ms_bp/api';
+    }
+    // Si on est en HTTP, utiliser l'URL directe
+    return 'http://69.62.105.205:8080/ms_bp/api';
+  }
+
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Configuration d'Axios
 const apiClient = axios.create({
@@ -16,6 +37,11 @@ const apiClient = axios.create({
 // Intercepteur pour les requêtes
 apiClient.interceptors.request.use(
   config => {
+    // Ajouter le header X-Requested-With pour le proxy CORS
+    if (config.baseURL?.includes('cors-anywhere.herokuapp.com')) {
+      config.headers['X-Requested-With'] = 'XMLHttpRequest';
+    }
+
     console.log('🚀 API Request:', {
       method: config.method?.toUpperCase(),
       url: config.url,
@@ -24,6 +50,7 @@ apiClient.interceptors.request.use(
       data: config.data,
       headers: config.headers,
       environment: import.meta.env.MODE,
+      protocol: window.location.protocol,
     });
     return config;
   },
