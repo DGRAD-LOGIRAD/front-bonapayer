@@ -2,11 +2,6 @@ import axios, { AxiosError, type AxiosResponse } from 'axios';
 
 // Configuration de l'URL API selon l'environnement
 const getApiBaseUrl = () => {
-  // Si une URL est définie dans les variables d'environnement, l'utiliser
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-
   // En production, gérer les problèmes HTTPS/HTTP
   if (import.meta.env.PROD) {
     // Si on est en HTTPS, utiliser allorigins.win pour éviter Mixed Content
@@ -21,6 +16,7 @@ const getApiBaseUrl = () => {
     return 'http://69.62.105.205:8080/ms_bp/api';
   }
 
+  // En développement, utiliser le proxy Vite
   return '/api';
 };
 
