@@ -71,7 +71,7 @@ function Indicateurs({ stats }: IndicateursProps) {
             className='h-full border-2 border-gray-200/50 hover:border-gray-300/70 transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm bg-white/80 hover:bg-white/90'
           >
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
+              <CardTitle className='text-sm font-medium text-primary'>
                 {indicator.title}
               </CardTitle>
               <div className={`p-2 rounded-lg ${indicator.bgColor}`}>
@@ -79,7 +79,7 @@ function Indicateurs({ stats }: IndicateursProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold text-balance text-wrap break-words'>
+              <div className='text-lg font-bold text-balance  break-words'>
                 {displayValue}
               </div>
               <CardDescription className='text-xs text-muted-foreground mt-1'>
