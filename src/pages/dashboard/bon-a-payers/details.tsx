@@ -60,6 +60,8 @@ function BonAPayerDetailsPage() {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: data.fkDevise,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -119,7 +121,7 @@ function BonAPayerDetailsPage() {
               <h4 className='text-sm font-medium text-gray-500 uppercase tracking-wide mb-3'>
                 Montant à payer
               </h4>
-              <p className='text-5xl font-bold text-primary'>
+              <p className='text-5xl font-bold text-primary text-balance text-wrap break-words'>
                 {formatCurrency(data.montant)}
               </p>
             </div>
@@ -258,7 +260,7 @@ function BonAPayerDetailsPage() {
                       <div className='flex flex-wrap gap-4'>
                         <div className='flex-1 min-w-[200px]'>
                           <p className='text-xs text-gray-500 mb-1'>Montant</p>
-                          <p className='text-sm font-bold text-primary'>
+                          <p className='text-sm font-bold text-primary text-balance text-wrap break-words'>
                             {formatCurrency(
                               (detail as { montant: number }).montant
                             )}

@@ -79,7 +79,9 @@ function Indicateurs({ stats }: IndicateursProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold'>{displayValue}</div>
+              <div className='text-2xl font-bold text-balance text-wrap break-words'>
+                {displayValue}
+              </div>
               <CardDescription className='text-xs text-muted-foreground mt-1'>
                 {indicator.description}
               </CardDescription>
