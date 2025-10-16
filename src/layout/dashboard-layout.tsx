@@ -22,7 +22,7 @@ import {
 const LABEL_OVERRIDES: Record<string, string> = {
   dashboard: 'Dashboard',
   'bon-a-payers': 'Bon à payer',
-  creer: 'Créer',
+  creer: 'Fractionner',
   utilisateurs: 'Utilisateurs',
   parametres: 'Paramètres',
   profile: 'Profil',

@@ -8,3 +8,7 @@ npm run format:check
 # Vérifier que le linting passe
 echo "🔍 Vérification du linting..."
 npm run lint
+
+# Vérifier que le build passe
+echo "🔨 Vérification du build..."
+npm run build

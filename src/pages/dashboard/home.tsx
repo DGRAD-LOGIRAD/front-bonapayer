@@ -6,7 +6,7 @@ function DashboardHomePage() {
   return (
     <div className='space-y-6'>
       <Indicateurs stats={dashboardStats} />
-      <Datatable data={bonAPayers.slice(0, 3)} />
+      <Datatable data={bonAPayers} />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { FileText, Clock, CheckCircle, DollarSign, Coins } from 'lucide-react';
+import { FileText, CheckCircle, DollarSign, Coins } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 
@@ -29,14 +29,6 @@ function Indicateurs({ stats }: IndicateursProps) {
       icon: FileText,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-    },
-    {
-      title: 'Bons à payer non fractionnés',
-      description: 'Nombre des bons à payer non fractionnés',
-      value: stats.bonAPayerNonFractionne,
-      icon: Clock,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
     },
     {
       title: 'Bons à payer fractionnés',
@@ -65,7 +57,7 @@ function Indicateurs({ stats }: IndicateursProps) {
   ];
 
   return (
-    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-5 h-full'>
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 h-full'>
       {indicators.map((indicator, index) => {
         const IconComponent = indicator.icon;
         const displayValue =
@@ -79,7 +71,7 @@ function Indicateurs({ stats }: IndicateursProps) {
             className='h-full border-2 border-gray-200/50 hover:border-gray-300/70 transition-all duration-300 shadow-lg hover:shadow-xl backdrop-blur-sm bg-white/80 hover:bg-white/90'
           >
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
+              <CardTitle className='text-sm font-medium text-primary'>
                 {indicator.title}
               </CardTitle>
               <div className={`p-2 rounded-lg ${indicator.bgColor}`}>
@@ -87,7 +79,9 @@ function Indicateurs({ stats }: IndicateursProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold'>{displayValue}</div>
+              <div className='text-lg font-bold text-balance  break-words'>
+                {displayValue}
+              </div>
               <CardDescription className='text-xs text-muted-foreground mt-1'>
                 {indicator.description}
               </CardDescription>

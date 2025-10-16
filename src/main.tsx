@@ -1,59 +1,169 @@
-import { StrictMode } from 'react';
+import { StrictMode, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import { QueryProvider } from './providers';
 import { Route, RouterProvider, createRoutesFromElements } from 'react-router';
 import { Navigate, createBrowserRouter } from 'react-router-dom';
-import AuthLayout from './layout/auth-layout.tsx';
-import LoginPage from './pages/auth/login.tsx';
-import ForgotPasswordPage from './pages/auth/forgot-password.tsx';
-import ProfilePage from './pages/dashboard/profile.tsx';
-import HomePage from './pages/home.tsx';
-import PrivateRoute from './layout/private-route.tsx';
-import DashboardHomePage from './pages/dashboard/home.tsx';
-import BonAPayersPage from './pages/dashboard/bon-a-payers/index.tsx';
-import CreerBonAPayerPage from './pages/dashboard/bon-a-payers/creer.tsx';
-import BonAPayerDetailsPage from './pages/dashboard/bon-a-payers/details.tsx';
-import BonAPayerPrevisualisationPage from './pages/dashboard/bon-a-payers/previsualisation.tsx';
-import UtilisateursPage from './pages/dashboard/utilisateurs.tsx';
-import ParametresPage from './pages/dashboard/parametres.tsx';
+import { SuspenseWrapper } from '@/components/ui/suspense-wrapper';
 import { Toaster } from 'sonner';
 
-// Activer MSW en mode développement
-if (import.meta.env.DEV) {
-  const { worker } = await import('./mocks/browser');
-  worker.start({
-    onUnhandledRequest: 'bypass',
-  });
-  console.log('🎭 MSW started in development mode');
-}
+// Lazy loading des layouts
+const AuthLayout = lazy(() => import('./layout/auth-layout.tsx'));
+const PrivateRoute = lazy(() => import('./layout/private-route.tsx'));
+
+// Lazy loading des pages d'authentification
+const LoginPage = lazy(() => import('./pages/auth/login.tsx'));
+const ForgotPasswordPage = lazy(
+  () => import('./pages/auth/forgot-password.tsx')
+);
+
+// Lazy loading des pages publiques
+const HomePage = lazy(() => import('./pages/home.tsx'));
+const NotFoundPage = lazy(() => import('./pages/404.tsx'));
+
+// Lazy loading des pages du dashboard
+const DashboardHomePage = lazy(() => import('./pages/dashboard/home.tsx'));
+const ProfilePage = lazy(() => import('./pages/dashboard/profile.tsx'));
+const UtilisateursPage = lazy(
+  () => import('./pages/dashboard/utilisateurs.tsx')
+);
+const ParametresPage = lazy(() => import('./pages/dashboard/parametres.tsx'));
+
+// Lazy loading des pages des bons à payer
+const BonAPayersPage = lazy(
+  () => import('./pages/dashboard/bon-a-payers/index.tsx')
+);
+const CreerBonAPayerPage = lazy(
+  () => import('./pages/dashboard/bon-a-payers/creer.tsx')
+);
+const BonAPayerDetailsPage = lazy(
+  () => import('./pages/dashboard/bon-a-payers/details.tsx')
+);
+const BonAPayerPrevisualisationPage = lazy(
+  () => import('./pages/dashboard/bon-a-payers/previsualisation.tsx')
+);
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<App />}>
       <Route index element={<Navigate to='/auth/login' replace />} />
-      <Route path='home' element={<HomePage />} />
-      <Route path='auth' element={<AuthLayout />}>
-        <Route path='login' element={<LoginPage />} />
-        <Route path='forgot-password' element={<ForgotPasswordPage />} />
+      <Route
+        path='home'
+        element={
+          <SuspenseWrapper>
+            <HomePage />
+          </SuspenseWrapper>
+        }
+      />
+      <Route
+        path='auth'
+        element={
+          <SuspenseWrapper>
+            <AuthLayout />
+          </SuspenseWrapper>
+        }
+      >
+        <Route
+          path='login'
+          element={
+            <SuspenseWrapper>
+              <LoginPage />
+            </SuspenseWrapper>
+          }
+        />
+        <Route
+          path='forgot-password'
+          element={
+            <SuspenseWrapper>
+              <ForgotPasswordPage />
+            </SuspenseWrapper>
+          }
+        />
       </Route>
-      <Route path='test-details/:id' element={<BonAPayerDetailsPage />} />
-      <Route path='dashboard' element={<PrivateRoute />}>
-        <Route index element={<DashboardHomePage />} />
+      <Route
+        path='dashboard'
+        element={
+          <SuspenseWrapper>
+            <PrivateRoute />
+          </SuspenseWrapper>
+        }
+      >
+        <Route
+          index
+          element={
+            <SuspenseWrapper>
+              <DashboardHomePage />
+            </SuspenseWrapper>
+          }
+        />
         <Route path='bon-a-payers'>
-          <Route index element={<BonAPayersPage />} />
-          <Route path='creer' element={<CreerBonAPayerPage />} />
-          <Route path=':documentId' element={<BonAPayerDetailsPage />} />
+          <Route
+            index
+            element={
+              <SuspenseWrapper>
+                <BonAPayersPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path='creer'
+            element={
+              <SuspenseWrapper>
+                <CreerBonAPayerPage />
+              </SuspenseWrapper>
+            }
+          />
+          <Route
+            path=':documentId'
+            element={
+              <SuspenseWrapper>
+                <BonAPayerDetailsPage />
+              </SuspenseWrapper>
+            }
+          />
           <Route
             path=':documentId/previsualisation'
-            element={<BonAPayerPrevisualisationPage />}
+            element={
+              <SuspenseWrapper>
+                <BonAPayerPrevisualisationPage />
+              </SuspenseWrapper>
+            }
           />
         </Route>
-        <Route path='utilisateurs' element={<UtilisateursPage />} />
-        <Route path='parametres' element={<ParametresPage />} />
-        <Route path='profile' element={<ProfilePage />} />
+        <Route
+          path='utilisateurs'
+          element={
+            <SuspenseWrapper>
+              <UtilisateursPage />
+            </SuspenseWrapper>
+          }
+        />
+        <Route
+          path='parametres'
+          element={
+            <SuspenseWrapper>
+              <ParametresPage />
+            </SuspenseWrapper>
+          }
+        />
+        <Route
+          path='profile'
+          element={
+            <SuspenseWrapper>
+              <ProfilePage />
+            </SuspenseWrapper>
+          }
+        />
       </Route>
+      <Route
+        path='*'
+        element={
+          <SuspenseWrapper>
+            <NotFoundPage />
+          </SuspenseWrapper>
+        }
+      />
     </Route>
   )
 );
