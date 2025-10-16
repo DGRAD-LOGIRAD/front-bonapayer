@@ -259,7 +259,9 @@ function BonAPayerDetailsPage() {
                         <div className='flex-1 min-w-[200px]'>
                           <p className='text-xs text-gray-500 mb-1'>Montant</p>
                           <p className='text-sm font-bold text-primary'>
-                            {formatCurrency(detail.montant)}
+                            {formatCurrency(
+                              (detail as { montant: number }).montant
+                            )}
                           </p>
                         </div>
                         <div className='flex-1 min-w-[200px]'>
@@ -267,13 +269,16 @@ function BonAPayerDetailsPage() {
                             Libellé du compte
                           </p>
                           <p className='text-sm font-medium text-gray-900'>
-                            {detail.libelleCompte}
+                            {
+                              (detail as { libelleCompte: string })
+                                .libelleCompte
+                            }
                           </p>
                         </div>
                         <div className='flex-1 min-w-[200px]'>
                           <p className='text-xs text-gray-500 mb-1'>Compte</p>
                           <p className='text-sm font-mono text-gray-900'>
-                            {detail.fkCompte}
+                            {(detail as { fkCompte: string }).fkCompte}
                           </p>
                         </div>
                         <div className='flex-1 min-w-[200px]'>
@@ -281,7 +286,7 @@ function BonAPayerDetailsPage() {
                             Référence
                           </p>
                           <p className='text-xs font-mono text-gray-600'>
-                            {detail.refernceBnp}
+                            {(detail as { refernceBnp: string }).refernceBnp}
                           </p>
                         </div>
                       </div>
