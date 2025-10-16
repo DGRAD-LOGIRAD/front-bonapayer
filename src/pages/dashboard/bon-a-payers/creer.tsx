@@ -55,8 +55,8 @@ const bonAPayerSchema = z.object({
   motifPenalite: z.string().min(1, 'Le motif est requis'),
   refenceLogirad: z.string().min(1, 'La référence LOGIRAD est requise'),
   codeReceveur: z.string().min(1, 'Le code receveur est requis'),
-  userName: z.string().min(1, "Le nom d'utilisateur est requis"),
-  fkUserCreate: z.string().min(1, "L'identifiant utilisateur est requis"),
+  userName: z.string().min(1, "Le nom d'ordonnateur est requis"),
+  fkUserCreate: z.string().min(1, "L'identifiant ordonnateur est requis"),
   fkContribuable: z.string().min(1, 'Le NIF est requis'),
   fkCompte: z.string().min(1, 'Le compte principal est requis'),
   fkCompteA: z.string().min(1, 'Le compte A est requis'),
@@ -578,7 +578,7 @@ function CreerBonAPayerPage() {
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
                 <Field>
-                  <FieldLabel>Utilisateur</FieldLabel>
+                  <FieldLabel>Ordonnateur</FieldLabel>
                   <FieldContent>
                     <Select
                       value={form.watch('userName')}
@@ -591,7 +591,7 @@ function CreerBonAPayerPage() {
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder='Sélectionner un utilisateur' />
+                        <SelectValue placeholder='Sélectionner un ordonnateur' />
                       </SelectTrigger>
                       <SelectContent>
                         {users.map(user => (
