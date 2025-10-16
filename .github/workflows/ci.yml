@@ -64,28 +64,8 @@ jobs:
           path: dist/
           retention-days: 7
 
-      - name: Merge to main
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          # Stash any local changes (like pnpm-lock.yaml updates)
-          git stash push -m "Stash local changes before merge"
-
-          # Switch to main branch
-          git checkout main
-
-          # Pull latest changes from main
-          git pull origin main
-
-          # Merge develop into main
-          git merge develop --no-ff -m "chore: merge develop to main for production deployment"
-
-          # Push merged changes to main
-          git push origin main
-
       - name: Create production deployment
         run: |
           echo "🚀 Production deployment ready!"
-          echo "Build artifacts uploaded and merged to main branch"
+          echo "Build artifacts uploaded successfully"
           echo "Application is ready for production deployment"
