@@ -18,6 +18,7 @@ import BonAPayerDetailsPage from './pages/dashboard/bon-a-payers/details.tsx';
 import BonAPayerPrevisualisationPage from './pages/dashboard/bon-a-payers/previsualisation.tsx';
 import UtilisateursPage from './pages/dashboard/utilisateurs.tsx';
 import ParametresPage from './pages/dashboard/parametres.tsx';
+import NotFoundPage from './pages/404.tsx';
 import { Toaster } from 'sonner';
 
 const router = createBrowserRouter(
@@ -44,6 +45,7 @@ const router = createBrowserRouter(
         <Route path='parametres' element={<ParametresPage />} />
         <Route path='profile' element={<ProfilePage />} />
       </Route>
+      <Route path='*' element={<NotFoundPage />} />
     </Route>
   )
 );
