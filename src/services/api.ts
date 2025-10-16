@@ -1,8 +1,26 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
 
-const API_BASE_URL = import.meta.env.PROD
-  ? 'http://69.62.105.205:8080/ms_bp/api'
-  : '/api';
+// Configuration de l'URL API selon l'environnement
+const getApiBaseUrl = () => {
+  // En production, gérer les problèmes HTTPS/HTTP
+  if (import.meta.env.PROD) {
+    // Si on est en HTTPS, utiliser allorigins.win pour éviter Mixed Content
+    if (window.location.protocol === 'https:') {
+      // Utiliser allorigins.win comme proxy CORS
+      return (
+        'https://api.allorigins.win/raw?url=' +
+        encodeURIComponent('http://69.62.105.205:8080/ms_bp/api')
+      );
+    }
+    // Si on est en HTTP, utiliser l'URL directe
+    return 'http://69.62.105.205:8080/ms_bp/api';
+  }
+
+  // En développement, utiliser le proxy Vite
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Configuration d'Axios
 const apiClient = axios.create({
@@ -11,15 +29,23 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   },
+  withCredentials: false, // Important pour CORS
 });
 
 // Intercepteur pour les requêtes
 apiClient.interceptors.request.use(
   config => {
+    // Adapter la requête pour allorigins.win
+    if (config.baseURL?.includes('allorigins.win')) {
+      // Pour allorigins.win, on fait une requête GET avec l'URL complète
+      const targetUrl = config.baseURL;
+      config.method = 'GET';
+      config.url = '';
+      config.baseURL = targetUrl;
+      config.data = undefined;
+    }
+
     console.log('🚀 API Request:', {
       method: config.method?.toUpperCase(),
       url: config.url,
@@ -27,6 +53,8 @@ apiClient.interceptors.request.use(
       fullURL: `${config.baseURL}${config.url}`,
       data: config.data,
       headers: config.headers,
+      environment: import.meta.env.MODE,
+      protocol: window.location.protocol,
     });
     return config;
   },
@@ -171,9 +199,8 @@ export const apiService = {
             `Erreur serveur: ${axiosError.response.status} - ${axiosError.response.data?.message || axiosError.message}`
           );
         } else if (axiosError.request) {
-          // La requête a été faite mais aucune réponse n'a été reçue
           throw new Error(
-            'Aucune réponse du serveur. Vérifiez votre connexion.'
+            `Erreur réseau: Impossible de joindre le serveur ${API_BASE_URL}. Vérifiez votre connexion et que le serveur est accessible.`
           );
         } else {
           // Quelque chose s'est mal passé lors de la configuration de la requête
@@ -205,7 +232,7 @@ export const apiService = {
         } else if (axiosError.request) {
           // La requête a été faite mais aucune réponse n'a été reçue
           throw new Error(
-            'Aucune réponse du serveur. Vérifiez votre connexion.'
+            `Erreur réseau: Impossible de joindre le serveur ${API_BASE_URL}. Vérifiez votre connexion et que le serveur est accessible.`
           );
         } else {
           // Quelque chose s'est mal passé lors de la configuration de la requête
