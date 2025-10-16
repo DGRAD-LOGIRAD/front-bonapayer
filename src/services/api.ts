@@ -1,6 +1,8 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.PROD
+  ? 'http://69.62.105.205:8080/ms_bp/api'
+  : '/api';
 
 // Configuration d'Axios
 const apiClient = axios.create({
@@ -8,6 +10,10 @@ const apiClient = axios.create({
   timeout: 30000, // 30 secondes
   headers: {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   },
 });
 
@@ -17,7 +23,10 @@ apiClient.interceptors.request.use(
     console.log('🚀 API Request:', {
       method: config.method?.toUpperCase(),
       url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
       data: config.data,
+      headers: config.headers,
     });
     return config;
   },
