@@ -1,12 +1,6 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
 
 const getApiBaseUrl = () => {
-  if (import.meta.env.PROD) {
-    // En production, utiliser l'URL directe
-    return 'https://api.dgrad.cloud/ms_bp/api';
-  }
-
-  // En développement, utiliser le proxy
   return '/api';
 };
 
