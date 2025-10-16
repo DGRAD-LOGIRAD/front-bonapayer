@@ -46,7 +46,7 @@ function BonAPayersPage() {
         data={filteredBonAPayers}
         title='Tous les bons à payer'
         description='Liste complète des bons à payer avec possibilité de recherche et consultation détaillée.'
-        ctaLabel='Créer un nouveau bon à payer'
+        ctaLabel='Fractionner un bon à payer'
       />
     </div>
   );

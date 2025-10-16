@@ -34,7 +34,7 @@ export const ADMIN_MENU: SidebarMenuItem[] = [
         href: '/dashboard/bon-a-payers',
       },
       {
-        label: 'Créer un nouveau',
+        label: 'Fractionner un bon à payer',
         icon: PlusCircle,
         href: '/dashboard/bon-a-payers/creer',
       },
