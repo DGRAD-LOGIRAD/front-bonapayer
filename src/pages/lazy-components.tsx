@@ -76,3 +76,9 @@ export const NotFoundPage = lazy(() =>
     default: module.default,
   }))
 );
+
+export const ServerErrorPage = lazy(() =>
+  import('../pages/500').then(module => ({
+    default: module.default,
+  }))
+);

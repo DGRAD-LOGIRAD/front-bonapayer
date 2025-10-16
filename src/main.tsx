@@ -19,6 +19,7 @@ const ForgotPasswordPage = lazy(
 
 const HomePage = lazy(() => import('./pages/home.tsx'));
 const NotFoundPage = lazy(() => import('./pages/404.tsx'));
+const ServerErrorPage = lazy(() => import('./pages/500.tsx'));
 
 const DashboardHomePage = lazy(() => import('./pages/dashboard/home.tsx'));
 const ProfilePage = lazy(() => import('./pages/dashboard/profile.tsx'));
@@ -158,6 +159,14 @@ const router = createBrowserRouter(
           }
         />
       </Route>
+      <Route
+        path='500'
+        element={
+          <SuspenseWrapper>
+            <ServerErrorPage />
+          </SuspenseWrapper>
+        }
+      />
       <Route
         path='*'
         element={

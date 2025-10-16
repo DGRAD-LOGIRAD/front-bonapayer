@@ -50,7 +50,17 @@ apiClient.interceptors.response.use(
       url: error.config?.url,
       data: error.response?.data,
     });
-    return Promise.reject(error);
+
+    // Transformer l'erreur Axios en format standard
+    const apiError = {
+      status: error.response?.status || 500,
+      message:
+        (error.response?.data as { message?: string })?.message ||
+        error.message,
+      code: error.code,
+    };
+
+    return Promise.reject(apiError);
   }
 );
 
