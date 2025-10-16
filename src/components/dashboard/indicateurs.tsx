@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { FileText, Clock, CheckCircle, DollarSign, Coins } from 'lucide-react';
+import { FileText, CheckCircle, DollarSign, Coins } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 
@@ -29,14 +29,6 @@ function Indicateurs({ stats }: IndicateursProps) {
       icon: FileText,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-    },
-    {
-      title: 'Bons à payer non fractionnés',
-      description: 'Nombre des bons à payer non fractionnés',
-      value: stats.bonAPayerNonFractionne,
-      icon: Clock,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
     },
     {
       title: 'Bons à payer fractionnés',
@@ -65,7 +57,7 @@ function Indicateurs({ stats }: IndicateursProps) {
   ];
 
   return (
-    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-5 h-full'>
+    <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 h-full'>
       {indicators.map((indicator, index) => {
         const IconComponent = indicator.icon;
         const displayValue =
