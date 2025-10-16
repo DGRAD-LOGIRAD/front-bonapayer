@@ -11,7 +11,7 @@ export function useBonAPayer(id: number) {
     queryKey: bonAPayerKeys.details(id),
     queryFn: async () => {
       const response = await apiService.getBonPayerDetails(id);
-      return response.data;
+      return response.data; // L'API retourne déjà { data: {...}, message: 'success', status: '200' }
     },
     enabled: !!id && id > 0,
   });
@@ -24,12 +24,10 @@ export function useCreateBonAPayer() {
     mutationFn: (payload: CreateBonPayerPayload) =>
       apiService.createBonPayer(payload),
     onSuccess: data => {
-      // Invalider les requêtes liées aux bons à payer
       queryClient.invalidateQueries({
         queryKey: bonAPayerKeys.all,
       });
 
-      // Pré-charger les détails du nouveau bon à payer
       queryClient.setQueryData(bonAPayerKeys.details(data.idBonPayer), {
         data: data,
         message: 'success',
@@ -59,7 +57,7 @@ export function usePrefetchBonAPayer() {
     queryClient.prefetchQuery({
       queryKey: bonAPayerKeys.details(id),
       queryFn: () => apiService.getBonPayerDetails(id),
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     });
   };
 }

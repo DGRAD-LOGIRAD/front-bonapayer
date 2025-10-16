@@ -8,21 +8,17 @@ import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { SuspenseWrapper } from '@/components/ui/suspense-wrapper';
 import { Toaster } from 'sonner';
 
-// Lazy loading des layouts
 const AuthLayout = lazy(() => import('./layout/auth-layout.tsx'));
 const PrivateRoute = lazy(() => import('./layout/private-route.tsx'));
 
-// Lazy loading des pages d'authentification
 const LoginPage = lazy(() => import('./pages/auth/login.tsx'));
 const ForgotPasswordPage = lazy(
   () => import('./pages/auth/forgot-password.tsx')
 );
 
-// Lazy loading des pages publiques
 const HomePage = lazy(() => import('./pages/home.tsx'));
 const NotFoundPage = lazy(() => import('./pages/404.tsx'));
 
-// Lazy loading des pages du dashboard
 const DashboardHomePage = lazy(() => import('./pages/dashboard/home.tsx'));
 const ProfilePage = lazy(() => import('./pages/dashboard/profile.tsx'));
 const UtilisateursPage = lazy(
@@ -30,7 +26,6 @@ const UtilisateursPage = lazy(
 );
 const ParametresPage = lazy(() => import('./pages/dashboard/parametres.tsx'));
 
-// Lazy loading des pages des bons à payer
 const BonAPayersPage = lazy(
   () => import('./pages/dashboard/bon-a-payers/index.tsx')
 );

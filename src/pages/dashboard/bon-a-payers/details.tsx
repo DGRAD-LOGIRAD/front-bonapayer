@@ -71,7 +71,6 @@ function BonAPayerDetailsPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      {/* Header minimaliste */}
       <div className='border-b border-gray-200'>
         <div className='max-w-4xl mx-auto px-6 py-4'>
           <div className='flex items-center justify-between'>
@@ -110,13 +109,11 @@ function BonAPayerDetailsPage() {
 
       <div className='max-w-4xl mx-auto px-6 py-6'>
         <div className='space-y-6'>
-          {/* Bon principal */}
           <div className='border border-gray-200 rounded-lg p-8'>
             <h3 className='text-base font-bold text-primary uppercase tracking-wide mb-6'>
               Bon principal
             </h3>
 
-            {/* Montant principal */}
             <div className='text-center mb-8'>
               <h4 className='text-sm font-medium text-gray-500 uppercase tracking-wide mb-3'>
                 Montant à payer
@@ -126,9 +123,7 @@ function BonAPayerDetailsPage() {
               </p>
             </div>
 
-            {/* Informations du bon principal */}
             <div className='space-y-6'>
-              {/* Contribuable et dates */}
               <div className='grid grid-cols-2 gap-6'>
                 <div>
                   <p className='text-xs text-gray-500'>Contribuable</p>
@@ -150,7 +145,6 @@ function BonAPayerDetailsPage() {
                 </div>
               </div>
 
-              {/* Dates et utilisateur */}
               <div className='pt-4 border-t border-gray-200'>
                 <div className='grid grid-cols-3 gap-4'>
                   <div>
@@ -174,7 +168,6 @@ function BonAPayerDetailsPage() {
                 </div>
               </div>
 
-              {/* Localisation */}
               <div className='pt-4 border-t border-gray-200'>
                 <div className='grid grid-cols-3 gap-4'>
                   <div>
@@ -198,7 +191,6 @@ function BonAPayerDetailsPage() {
                 </div>
               </div>
 
-              {/* Informations techniques */}
               <div className='pt-4 border-t border-gray-200'>
                 <div className='grid grid-cols-3 gap-4'>
                   <div>
@@ -222,7 +214,6 @@ function BonAPayerDetailsPage() {
                 </div>
               </div>
 
-              {/* Motif de la pénalité */}
               <div className='pt-4 border-t border-gray-200'>
                 <p className='text-xs text-gray-500 mb-2'>
                   Motif de la pénalité
@@ -234,7 +225,6 @@ function BonAPayerDetailsPage() {
             </div>
           </div>
 
-          {/* Détail des fractions */}
           {data.detailsBonPayerList && data.detailsBonPayerList.length > 0 && (
             <div className='border border-gray-200 rounded-lg p-6'>
               <h3 className='text-base font-bold text-primary uppercase tracking-wide mb-6'>

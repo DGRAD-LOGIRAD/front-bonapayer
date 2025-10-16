@@ -94,7 +94,6 @@ function CreerBonAPayerPage() {
   const [selectedVille, setSelectedVille] = useState<string>('');
   const [selectedSite, setSelectedSite] = useState<string>('');
 
-  // Hook React Query pour créer un bon à payer
   const createBonAPayerMutation = useCreateBonAPayer();
 
   const form = useForm<BonAPayerFormValues>({
@@ -102,14 +101,12 @@ function CreerBonAPayerPage() {
     defaultValues,
   });
 
-  // Initialiser les valeurs par défaut
   React.useEffect(() => {
     setSelectedProvince(defaultValues.fkProvince);
     setSelectedVille(defaultValues.fkVille);
     setSelectedSite(defaultValues.fkSite);
   }, []);
 
-  // Fonctions pour gérer les sélections conditionnelles
   const handleProvinceChange = (provinceId: string) => {
     setSelectedProvince(provinceId);
     setSelectedVille('');
@@ -131,7 +128,6 @@ function CreerBonAPayerPage() {
     form.setValue('fkSite', siteId);
   };
 
-  // Filtrer les villes et sites selon la sélection
   const filteredVilles = selectedProvince
     ? villes.filter(ville => ville.fkProvince === selectedProvince)
     : [];

@@ -2,9 +2,11 @@ import axios, { AxiosError, type AxiosResponse } from 'axios';
 
 const getApiBaseUrl = () => {
   if (import.meta.env.PROD) {
+    // En production, utiliser l'URL directe
     return 'https://api.dgrad.cloud/ms_bp/api';
   }
 
+  // En développement, utiliser le proxy
   return '/api';
 };
 
@@ -16,6 +18,10 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers':
+      'Content-Type, Authorization, X-Requested-With',
   },
   withCredentials: false,
 });
@@ -58,6 +64,14 @@ apiClient.interceptors.response.use(
       url: error.config?.url,
       data: error.response?.data,
     });
+
+    // Gestion spécifique des erreurs CORS
+    if (error.message.includes('CORS') || error.message.includes('cors')) {
+      console.error(
+        '🚫 Erreur CORS détectée. Vérifiez la configuration du serveur.'
+      );
+    }
+
     return Promise.reject(error);
   }
 );

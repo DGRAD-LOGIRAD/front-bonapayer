@@ -14,7 +14,6 @@ import {
   Image,
 } from '@react-pdf/renderer';
 
-// Interface pour les données du bon à payer
 interface BonAPayerData {
   id: number;
   nomContribuable: string;
@@ -36,7 +35,6 @@ interface BonAPayerData {
   numero?: string;
 }
 
-// ErrorBoundary pour capturer les erreurs PDF
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
@@ -184,7 +182,6 @@ const styles = StyleSheet.create({
   },
 });
 
-// Composant PDF officiel pour un bon à payer
 const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
   <Document>
     <Page size='A4' style={styles.page}>
@@ -197,12 +194,10 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
         </View>
       </View>
 
-      {/* Titre principal */}
       <Text style={styles.title}>
         BON A PAYER N° {data.refernceBnp || data.numero}
       </Text>
 
-      {/* Section 1: Informations de l'assujetti */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>INFORMATIONS DE L'ASSUJETTI</Text>
         <View style={styles.table}>
@@ -241,7 +236,6 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
         </View>
       </View>
 
-      {/* Section 2: Informations de l'ordonnancement */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
           INFORMATIONS DE L'ORDONNANCEMENT
@@ -335,7 +329,6 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
         </View>
       </View>
 
-      {/* Signature */}
       <Text style={styles.signature}>Signature</Text>
     </Page>
   </Document>
@@ -364,7 +357,6 @@ export default function PrevisualisationPage() {
     );
   }
 
-  // Préparer les données pour les fractions
   const fractions = data.detailsBonPayerList || [];
   const currentData =
     fractions.find((_, index) => activeTab === `fraction-${index}`) ||
