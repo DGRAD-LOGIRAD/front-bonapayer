@@ -2,10 +2,10 @@ import type { BonAPayerSummary } from '@/components/dashboard/datatable';
 import type { DashboardStats } from '@/components/dashboard/indicateurs';
 
 export const dashboardStats: DashboardStats = {
-  bonAPayerNonFractionne: 3, // Correspond aux 3 premiers bons (non fractionnés)
-  bonAPayeFractionne: 1, // Correspond au 4ème bon (fractionné)
-  totalUSD: 4_964.02, // Somme des montants USD: 688.5 + 1025.97 + 3250.55
-  totalCDF: 9_543_250, // Montant CDF unique
+  bonAPayerNonFractionne: 3,
+  bonAPayeFractionne: 1,
+  totalUSD: 4_964.02,
+  totalCDF: 9_543_250,
 };
 
 export const bonAPayers: BonAPayerSummary[] = [

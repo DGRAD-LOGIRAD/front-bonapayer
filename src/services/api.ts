@@ -1,51 +1,20 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
 
-// Configuration de l'URL API selon l'environnement
-const getApiBaseUrl = () => {
-  // En production, gérer les problèmes HTTPS/HTTP
-  if (import.meta.env.PROD) {
-    // Si on est en HTTPS, utiliser allorigins.win pour éviter Mixed Content
-    if (window.location.protocol === 'https:') {
-      // Utiliser allorigins.win comme proxy CORS
-      return (
-        'https://api.allorigins.win/raw?url=' +
-        encodeURIComponent('http://69.62.105.205:8080/ms_bp/api')
-      );
-    }
-    // Si on est en HTTP, utiliser l'URL directe
-    return 'http://69.62.105.205:8080/ms_bp/api';
-  }
+// Configuration pour utiliser le proxy
+const API_BASE_URL = '/api';
 
-  // En développement, utiliser le proxy Vite
-  return '/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
-
-// Configuration d'Axios
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 secondes
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  withCredentials: false, // Important pour CORS
+  withCredentials: false,
 });
 
-// Intercepteur pour les requêtes
 apiClient.interceptors.request.use(
   config => {
-    // Adapter la requête pour allorigins.win
-    if (config.baseURL?.includes('allorigins.win')) {
-      // Pour allorigins.win, on fait une requête GET avec l'URL complète
-      const targetUrl = config.baseURL;
-      config.method = 'GET';
-      config.url = '';
-      config.baseURL = targetUrl;
-      config.data = undefined;
-    }
-
     console.log('🚀 API Request:', {
       method: config.method?.toUpperCase(),
       url: config.url,
@@ -54,7 +23,6 @@ apiClient.interceptors.request.use(
       data: config.data,
       headers: config.headers,
       environment: import.meta.env.MODE,
-      protocol: window.location.protocol,
     });
     return config;
   },
@@ -64,7 +32,6 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Intercepteur pour les réponses
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     console.log('✅ API Response:', {
@@ -83,7 +50,17 @@ apiClient.interceptors.response.use(
       url: error.config?.url,
       data: error.response?.data,
     });
-    return Promise.reject(error);
+
+    // Transformer l'erreur Axios en format standard
+    const apiError = {
+      status: error.response?.status || 500,
+      message:
+        (error.response?.data as { message?: string })?.message ||
+        error.message,
+      code: error.code,
+    };
+
+    return Promise.reject(apiError);
   }
 );
 
@@ -194,7 +171,6 @@ export const apiService = {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<CreateBonPayerResponse>;
         if (axiosError.response) {
-          // Le serveur a répondu avec un code d'erreur
           throw new Error(
             `Erreur serveur: ${axiosError.response.status} - ${axiosError.response.data?.message || axiosError.message}`
           );
@@ -203,7 +179,6 @@ export const apiService = {
             `Erreur réseau: Impossible de joindre le serveur ${API_BASE_URL}. Vérifiez votre connexion et que le serveur est accessible.`
           );
         } else {
-          // Quelque chose s'est mal passé lors de la configuration de la requête
           throw new Error(`Erreur de configuration: ${axiosError.message}`);
         }
       }
@@ -230,12 +205,10 @@ export const apiService = {
             `Erreur serveur: ${axiosError.response.status} - ${axiosError.response.data?.message || axiosError.message}`
           );
         } else if (axiosError.request) {
-          // La requête a été faite mais aucune réponse n'a été reçue
           throw new Error(
             `Erreur réseau: Impossible de joindre le serveur ${API_BASE_URL}. Vérifiez votre connexion et que le serveur est accessible.`
           );
         } else {
-          // Quelque chose s'est mal passé lors de la configuration de la requête
           throw new Error(`Erreur de configuration: ${axiosError.message}`);
         }
       }

@@ -6,23 +6,21 @@ import { QueryProvider } from './providers';
 import { Route, RouterProvider, createRoutesFromElements } from 'react-router';
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { SuspenseWrapper } from '@/components/ui/suspense-wrapper';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Toaster } from 'sonner';
 
-// Lazy loading des layouts
 const AuthLayout = lazy(() => import('./layout/auth-layout.tsx'));
 const PrivateRoute = lazy(() => import('./layout/private-route.tsx'));
 
-// Lazy loading des pages d'authentification
 const LoginPage = lazy(() => import('./pages/auth/login.tsx'));
 const ForgotPasswordPage = lazy(
   () => import('./pages/auth/forgot-password.tsx')
 );
 
-// Lazy loading des pages publiques
 const HomePage = lazy(() => import('./pages/home.tsx'));
 const NotFoundPage = lazy(() => import('./pages/404.tsx'));
+const ServerErrorPage = lazy(() => import('./pages/500.tsx'));
 
-// Lazy loading des pages du dashboard
 const DashboardHomePage = lazy(() => import('./pages/dashboard/home.tsx'));
 const ProfilePage = lazy(() => import('./pages/dashboard/profile.tsx'));
 const UtilisateursPage = lazy(
@@ -30,7 +28,6 @@ const UtilisateursPage = lazy(
 );
 const ParametresPage = lazy(() => import('./pages/dashboard/parametres.tsx'));
 
-// Lazy loading des pages des bons à payer
 const BonAPayersPage = lazy(
   () => import('./pages/dashboard/bon-a-payers/index.tsx')
 );
@@ -109,25 +106,31 @@ const router = createBrowserRouter(
           <Route
             path='creer'
             element={
-              <SuspenseWrapper>
-                <CreerBonAPayerPage />
-              </SuspenseWrapper>
+              <ErrorBoundary>
+                <SuspenseWrapper loadingText='Chargement du formulaire...'>
+                  <CreerBonAPayerPage />
+                </SuspenseWrapper>
+              </ErrorBoundary>
             }
           />
           <Route
             path=':documentId'
             element={
-              <SuspenseWrapper>
-                <BonAPayerDetailsPage />
-              </SuspenseWrapper>
+              <ErrorBoundary>
+                <SuspenseWrapper loadingText='Chargement des détails...'>
+                  <BonAPayerDetailsPage />
+                </SuspenseWrapper>
+              </ErrorBoundary>
             }
           />
           <Route
             path=':documentId/previsualisation'
             element={
-              <SuspenseWrapper>
-                <BonAPayerPrevisualisationPage />
-              </SuspenseWrapper>
+              <ErrorBoundary>
+                <SuspenseWrapper loadingText='Chargement de la prévisualisation...'>
+                  <BonAPayerPrevisualisationPage />
+                </SuspenseWrapper>
+              </ErrorBoundary>
             }
           />
         </Route>
@@ -157,6 +160,14 @@ const router = createBrowserRouter(
         />
       </Route>
       <Route
+        path='500'
+        element={
+          <SuspenseWrapper>
+            <ServerErrorPage />
+          </SuspenseWrapper>
+        }
+      />
+      <Route
         path='*'
         element={
           <SuspenseWrapper>
@@ -169,9 +180,11 @@ const router = createBrowserRouter(
 );
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryProvider>
-      <RouterProvider router={router} />
-      <Toaster richColors />
-    </QueryProvider>
+    <ErrorBoundary>
+      <QueryProvider>
+        <RouterProvider router={router} />
+        <Toaster richColors />
+      </QueryProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

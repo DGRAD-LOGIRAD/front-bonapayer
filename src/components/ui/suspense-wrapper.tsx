@@ -3,20 +3,20 @@ import { Loading } from '@/components/ui/loading';
 
 interface SuspenseWrapperProps {
   children: ReactNode;
+  fallback?: ReactNode;
+  loadingText?: string;
 }
 
-export function SuspenseWrapper({ children }: SuspenseWrapperProps) {
-  return (
-    <Suspense
-      fallback={
-        <div className='flex items-center justify-center min-h-[400px]'>
-          <Loading size='lg' text='Chargement...' />
-        </div>
-      }
-    >
-      {children}
-    </Suspense>
+export function SuspenseWrapper({
+  children,
+  fallback,
+  loadingText = 'Chargement...',
+}: SuspenseWrapperProps) {
+  const defaultFallback = (
+    <div className='flex items-center justify-center min-h-[400px]'>
+      <Loading size='lg' text={loadingText} />
+    </div>
   );
-}
 
-export default SuspenseWrapper;
+  return <Suspense fallback={fallback || defaultFallback}>{children}</Suspense>;
+}

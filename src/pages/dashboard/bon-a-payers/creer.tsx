@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -29,10 +30,18 @@ import {
 } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { users, provinces, villes, sites } from '@/data/user';
+import {
+  users,
+  provinces,
+  villes,
+  sites,
+  comptesBancaires,
+  type CompteBancaire,
+} from '@/data/user';
 import { type CreateBonPayerPayload } from '@/services/api';
 import { ErrorDebug } from '@/components/ui/error-debug';
 import { useCreateBonAPayer } from '@/hooks/useBonAPayer';
+import { CompteSelectionModal } from '@/components/ui/compte-selection-modal';
 
 const bonAPayerSchema = z.object({
   numero: z.string().min(1, 'Le numéro est requis'),
@@ -62,39 +71,49 @@ const bonAPayerSchema = z.object({
 
 type BonAPayerFormValues = z.infer<typeof bonAPayerSchema>;
 
-type BonAPayerPayload = BonAPayerFormValues & {
-  montant: string;
-};
-
 const defaultValues: BonAPayerFormValues = {
-  numero: '4/DGRAD/2024',
-  montant: '688.5000',
-  dateEcheance: '2024-02-14',
-  motifPenalite: "50% de la pénalité d'amende",
-  refenceLogirad: 'BF25AA00579',
-  codeReceveur: '522-800',
+  numero: '',
+  montant: '',
+  dateEcheance: '',
+  motifPenalite: '',
+  refenceLogirad: '',
+  codeReceveur: '',
   userName: 'KASHALA',
   fkUserCreate: '1',
-  fkContribuable: 'NIF20AC11109',
-  fkCompte: '00011-00101-000001291036-41',
-  fkCompteA: '0001300001003003081',
-  fkCompteB: '00013000010030030810440',
-  fkActe: '26403',
+  fkContribuable: '',
+  fkCompte: '',
+  fkCompteA: '',
+  fkCompteB: '',
+  fkActe: '',
   fkDevise: 'USD',
-  fkNotePerception: '359176',
-  fkSite: '37783',
-  fkVille: '19009',
-  fkProvince: '2386',
+  fkNotePerception: '',
+  fkSite: '',
+  fkVille: '',
+  fkProvince: '',
 };
 
 function CreerBonAPayerPage() {
   const navigate = useNavigate();
-  const [payload, setPayload] = useState<BonAPayerPayload | null>(null);
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedVille, setSelectedVille] = useState<string>('');
   const [selectedSite, setSelectedSite] = useState<string>('');
 
-  // Hook React Query pour créer un bon à payer
+  // États pour les comptes bancaires
+  const [selectedComptePrincipal, setSelectedComptePrincipal] =
+    useState<CompteBancaire | null>(null);
+  const [selectedCompteA, setSelectedCompteA] = useState<CompteBancaire | null>(
+    null
+  );
+  const [selectedCompteB, setSelectedCompteB] = useState<CompteBancaire | null>(
+    null
+  );
+
+  // États pour les modals
+  const [isComptePrincipalModalOpen, setIsComptePrincipalModalOpen] =
+    useState(false);
+  const [isCompteAModalOpen, setIsCompteAModalOpen] = useState(false);
+  const [isCompteBModalOpen, setIsCompteBModalOpen] = useState(false);
+
   const createBonAPayerMutation = useCreateBonAPayer();
 
   const form = useForm<BonAPayerFormValues>({
@@ -102,14 +121,12 @@ function CreerBonAPayerPage() {
     defaultValues,
   });
 
-  // Initialiser les valeurs par défaut
   React.useEffect(() => {
     setSelectedProvince(defaultValues.fkProvince);
     setSelectedVille(defaultValues.fkVille);
     setSelectedSite(defaultValues.fkSite);
   }, []);
 
-  // Fonctions pour gérer les sélections conditionnelles
   const handleProvinceChange = (provinceId: string) => {
     setSelectedProvince(provinceId);
     setSelectedVille('');
@@ -131,7 +148,23 @@ function CreerBonAPayerPage() {
     form.setValue('fkSite', siteId);
   };
 
-  // Filtrer les villes et sites selon la sélection
+  // Fonctions de gestion des comptes bancaires
+  const handleComptePrincipalSelect = (compte: CompteBancaire) => {
+    setSelectedComptePrincipal(compte);
+    form.setValue('fkCompte', compte.id);
+    form.setValue('fkDevise', compte.devise);
+  };
+
+  const handleCompteASelect = (compte: CompteBancaire) => {
+    setSelectedCompteA(compte);
+    form.setValue('fkCompteA', compte.id);
+  };
+
+  const handleCompteBSelect = (compte: CompteBancaire) => {
+    setSelectedCompteB(compte);
+    form.setValue('fkCompteB', compte.id);
+  };
+
   const filteredVilles = selectedProvince
     ? villes.filter(ville => ville.fkProvince === selectedProvince)
     : [];
@@ -148,13 +181,11 @@ function CreerBonAPayerPage() {
       dateEcheance: format(new Date(values.dateEcheance), 'yyyy-MM-dd'),
     };
 
-    setPayload(preparedPayload as BonAPayerPayload);
-
     createBonAPayerMutation.mutate(preparedPayload, {
       onSuccess: response => {
         if (response.code === '200') {
           toast.success('Bon à payer créé avec succès');
-          navigate(`/bon-a-payers/${response.idBonPayer}`);
+          navigate(`/dashboard/bon-a-payers/${response.idBonPayer}`);
         } else {
           const errorMessage = `Erreur: ${response.message}`;
           toast.error(errorMessage);
@@ -168,8 +199,8 @@ function CreerBonAPayerPage() {
   };
 
   return (
-    <div className='grid gap-6 lg:grid-cols-3'>
-      <Card className='lg:col-span-2'>
+    <div className=' '>
+      <Card className='max-w-5xl mx-auto'>
         <CardHeader>
           <CardTitle>Enregistrer un bon à payer</CardTitle>
           <CardDescription>
@@ -230,6 +261,128 @@ function CreerBonAPayerPage() {
 
             <section className='space-y-4'>
               <h3 className='text-lg font-semibold text-primary'>
+                Comptes bancaires
+              </h3>
+              <div className='grid gap-4 md:grid-cols-2'>
+                <Field className='md:col-span-2'>
+                  <FieldLabel>Compte principal</FieldLabel>
+                  <FieldContent>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      className='w-full justify-start h-auto p-3'
+                      onClick={() => setIsComptePrincipalModalOpen(true)}
+                    >
+                      {selectedComptePrincipal ? (
+                        <div className='flex flex-col items-start w-full text-left'>
+                          <div className='flex items-center gap-2 w-full'>
+                            <span className='text-sm font-medium truncate flex-1'>
+                              {selectedComptePrincipal.libelle}
+                            </span>
+                            <Badge variant='outline' className='text-xs'>
+                              {selectedComptePrincipal.devise}
+                            </Badge>
+                          </div>
+                          <span className='text-xs text-gray-500 font-mono mt-1'>
+                            {selectedComptePrincipal.id}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className='text-sm'>
+                          Sélectionner un compte principal
+                        </span>
+                      )}
+                    </Button>
+                    <FieldError
+                      errors={
+                        form.formState.errors.fkCompte && [
+                          { message: form.formState.errors.fkCompte.message },
+                        ]
+                      }
+                    />
+                  </FieldContent>
+                </Field>
+                <Field>
+                  <FieldLabel>Compte A</FieldLabel>
+                  <FieldContent>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      className='w-full justify-start h-auto p-3'
+                      onClick={() => setIsCompteAModalOpen(true)}
+                    >
+                      {selectedCompteA ? (
+                        <div className='flex flex-col items-start w-full text-left'>
+                          <div className='flex items-center gap-2 w-full'>
+                            <span className='text-sm font-medium truncate flex-1'>
+                              {selectedCompteA.libelle}
+                            </span>
+                            <Badge variant='outline' className='text-xs'>
+                              {selectedCompteA.devise}
+                            </Badge>
+                          </div>
+                          <span className='text-xs text-gray-500 font-mono mt-1'>
+                            {selectedCompteA.id}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className='text-sm'>
+                          Sélectionner le compte A
+                        </span>
+                      )}
+                    </Button>
+                    <FieldError
+                      errors={
+                        form.formState.errors.fkCompteA && [
+                          { message: form.formState.errors.fkCompteA.message },
+                        ]
+                      }
+                    />
+                  </FieldContent>
+                </Field>
+                <Field>
+                  <FieldLabel>Compte B</FieldLabel>
+                  <FieldContent>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      className='w-full justify-start h-auto p-3'
+                      onClick={() => setIsCompteBModalOpen(true)}
+                    >
+                      {selectedCompteB ? (
+                        <div className='flex flex-col items-start w-full text-left'>
+                          <div className='flex items-center gap-2 w-full'>
+                            <span className='text-sm font-medium truncate flex-1'>
+                              {selectedCompteB.libelle}
+                            </span>
+                            <Badge variant='outline' className='text-xs'>
+                              {selectedCompteB.devise}
+                            </Badge>
+                          </div>
+                          <span className='text-xs text-gray-500 font-mono mt-1'>
+                            {selectedCompteB.id}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className='text-sm'>
+                          Sélectionner le compte B
+                        </span>
+                      )}
+                    </Button>
+                    <FieldError
+                      errors={
+                        form.formState.errors.fkCompteB && [
+                          { message: form.formState.errors.fkCompteB.message },
+                        ]
+                      }
+                    />
+                  </FieldContent>
+                </Field>
+              </div>
+            </section>
+
+            <section className='space-y-4'>
+              <h3 className='text-lg font-semibold text-primary'>
                 Montants et actes
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
@@ -238,7 +391,12 @@ function CreerBonAPayerPage() {
                     Montant (4 décimales)
                   </FieldLabel>
                   <FieldContent>
-                    <Input id='montant' {...form.register('montant')} />
+                    <Input
+                      id='montant'
+                      {...form.register('montant')}
+                      type='number'
+                      step='0.0001'
+                    />
                     <FieldError
                       errors={
                         form.formState.errors.montant && [
@@ -251,20 +409,31 @@ function CreerBonAPayerPage() {
                 <Field>
                   <FieldLabel>Devise</FieldLabel>
                   <FieldContent>
-                    <Select
-                      value={form.watch('fkDevise')}
-                      onValueChange={value =>
-                        form.setValue('fkDevise', value as 'USD' | 'CDF')
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Sélectionner la devise' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='USD'>USD</SelectItem>
-                        <SelectItem value='CDF'>CDF</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {selectedComptePrincipal ? (
+                      <div className='flex items-center gap-2 p-3 border rounded-md bg-gray-50'>
+                        <Badge variant='outline'>
+                          {selectedComptePrincipal.devise}
+                        </Badge>
+                        <span className='text-sm text-gray-600'>
+                          (Figée par le compte bancaire)
+                        </span>
+                      </div>
+                    ) : (
+                      <Select
+                        value={form.watch('fkDevise')}
+                        onValueChange={value =>
+                          form.setValue('fkDevise', value as 'USD' | 'CDF')
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder='Sélectionner la devise' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='USD'>USD</SelectItem>
+                          <SelectItem value='CDF'>CDF</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                     <FieldError
                       errors={
                         form.formState.errors.fkDevise && [
@@ -306,53 +475,6 @@ function CreerBonAPayerPage() {
                             message:
                               form.formState.errors.motifPenalite.message,
                           },
-                        ]
-                      }
-                    />
-                  </FieldContent>
-                </Field>
-              </div>
-            </section>
-
-            <section className='space-y-4'>
-              <h3 className='text-lg font-semibold text-primary'>
-                Comptes bancaires
-              </h3>
-              <div className='grid gap-4 md:grid-cols-2'>
-                <Field className='md:col-span-2'>
-                  <FieldLabel htmlFor='fkCompte'>Compte principal</FieldLabel>
-                  <FieldContent>
-                    <Input id='fkCompte' {...form.register('fkCompte')} />
-                    <FieldError
-                      errors={
-                        form.formState.errors.fkCompte && [
-                          { message: form.formState.errors.fkCompte.message },
-                        ]
-                      }
-                    />
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor='fkCompteA'>Compte A</FieldLabel>
-                  <FieldContent>
-                    <Input id='fkCompteA' {...form.register('fkCompteA')} />
-                    <FieldError
-                      errors={
-                        form.formState.errors.fkCompteA && [
-                          { message: form.formState.errors.fkCompteA.message },
-                        ]
-                      }
-                    />
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor='fkCompteB'>Compte B</FieldLabel>
-                  <FieldContent>
-                    <Input id='fkCompteB' {...form.register('fkCompteB')} />
-                    <FieldError
-                      errors={
-                        form.formState.errors.fkCompteB && [
-                          { message: form.formState.errors.fkCompteB.message },
                         ]
                       }
                     />
@@ -428,7 +550,7 @@ function CreerBonAPayerPage() {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor='refenceLogirad'>
-                    Référence LOGIRAD
+                    Numéro Bon à Payer Logirad
                   </FieldLabel>
                   <FieldContent>
                     <Input
@@ -593,33 +715,38 @@ function CreerBonAPayerPage() {
                 disabled={createBonAPayerMutation.isPending}
               >
                 {createBonAPayerMutation.isPending
-                  ? 'Création en cours...'
-                  : 'Créer le bon à payer'}
+                  ? 'Fractionnement en cours...'
+                  : 'Fractionner un bon à payer'}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
 
-      <Card className='h-fit'>
-        <CardHeader>
-          <CardTitle>Payload généré</CardTitle>
-          <CardDescription>
-            Vérifiez la structure avant l\'envoi au backend.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {payload ? (
-            <pre className='max-h-[500px] overflow-auto rounded-md bg-muted p-4 text-xs'>
-              {JSON.stringify(payload, null, 2)}
-            </pre>
-          ) : (
-            <p className='text-sm text-muted-foreground'>
-              La requête apparaîtra ici après soumission.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      {/* Modals de sélection des comptes */}
+      <CompteSelectionModal
+        isOpen={isComptePrincipalModalOpen}
+        onClose={() => setIsComptePrincipalModalOpen(false)}
+        onSelect={handleComptePrincipalSelect}
+        comptes={comptesBancaires}
+        title='Sélectionner le compte principal'
+      />
+
+      <CompteSelectionModal
+        isOpen={isCompteAModalOpen}
+        onClose={() => setIsCompteAModalOpen(false)}
+        onSelect={handleCompteASelect}
+        comptes={comptesBancaires}
+        title='Sélectionner le compte A'
+      />
+
+      <CompteSelectionModal
+        isOpen={isCompteBModalOpen}
+        onClose={() => setIsCompteBModalOpen(false)}
+        onSelect={handleCompteBSelect}
+        comptes={comptesBancaires}
+        title='Sélectionner le compte B'
+      />
     </div>
   );
 }

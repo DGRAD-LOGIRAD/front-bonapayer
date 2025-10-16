@@ -18,6 +18,32 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.dgrad.cloud/ms_bp',
+        changeOrigin: true,
+        secure: true,
+        rewrite: path => path.replace(/^\/api/, '/api'),
+        configure: proxy => {
+          proxy.on('error', err => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (_, req) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log(
+              'Received Response from the Target:',
+              proxyRes.statusCode,
+              req.url
+            );
+          });
+        },
+      },
+    },
+    allowedHosts: ['bonapayer.dgrad.cloud'],
+  },
   build: {
     rollupOptions: {
       output: {
@@ -75,29 +101,5 @@ export default defineConfig({
     },
     // Augmenter la limite de taille des chunks
     chunkSizeWarningLimit: 1000,
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://69.62.105.205:8080/ms_bp',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '/api'),
-        configure: proxy => {
-          proxy.on('error', err => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (_, req) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(
-              'Received Response from the Target:',
-              proxyRes.statusCode,
-              req.url
-            );
-          });
-        },
-      },
-    },
   },
 });
