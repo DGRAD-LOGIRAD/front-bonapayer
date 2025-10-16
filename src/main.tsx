@@ -20,15 +20,6 @@ import UtilisateursPage from './pages/dashboard/utilisateurs.tsx';
 import ParametresPage from './pages/dashboard/parametres.tsx';
 import { Toaster } from 'sonner';
 
-// Activer MSW en mode développement
-if (import.meta.env.DEV) {
-  const { worker } = await import('./mocks/browser');
-  worker.start({
-    onUnhandledRequest: 'bypass',
-  });
-  console.log('🎭 MSW started in development mode');
-}
-
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<App />}>
@@ -38,7 +29,6 @@ const router = createBrowserRouter(
         <Route path='login' element={<LoginPage />} />
         <Route path='forgot-password' element={<ForgotPasswordPage />} />
       </Route>
-      <Route path='test-details/:id' element={<BonAPayerDetailsPage />} />
       <Route path='dashboard' element={<PrivateRoute />}>
         <Route index element={<DashboardHomePage />} />
         <Route path='bon-a-payers'>
