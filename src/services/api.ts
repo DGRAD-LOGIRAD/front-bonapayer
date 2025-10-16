@@ -1,8 +1,6 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
 
-const API_BASE_URL = import.meta.env.PROD
-  ? 'http://69.62.105.205:8080/ms_bp/api'
-  : '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Configuration d'Axios
 const apiClient = axios.create({
@@ -27,6 +25,7 @@ apiClient.interceptors.request.use(
       fullURL: `${config.baseURL}${config.url}`,
       data: config.data,
       headers: config.headers,
+      environment: import.meta.env.MODE,
     });
     return config;
   },
@@ -171,9 +170,8 @@ export const apiService = {
             `Erreur serveur: ${axiosError.response.status} - ${axiosError.response.data?.message || axiosError.message}`
           );
         } else if (axiosError.request) {
-          // La requête a été faite mais aucune réponse n'a été reçue
           throw new Error(
-            'Aucune réponse du serveur. Vérifiez votre connexion.'
+            `Erreur réseau: Impossible de joindre le serveur ${API_BASE_URL}. Vérifiez votre connexion et que le serveur est accessible.`
           );
         } else {
           // Quelque chose s'est mal passé lors de la configuration de la requête
@@ -205,7 +203,7 @@ export const apiService = {
         } else if (axiosError.request) {
           // La requête a été faite mais aucune réponse n'a été reçue
           throw new Error(
-            'Aucune réponse du serveur. Vérifiez votre connexion.'
+            `Erreur réseau: Impossible de joindre le serveur ${API_BASE_URL}. Vérifiez votre connexion et que le serveur est accessible.`
           );
         } else {
           // Quelque chose s'est mal passé lors de la configuration de la requête
