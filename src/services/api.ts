@@ -1,21 +1,30 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
+import { env } from '@/config/env';
 
 const getApiBaseUrl = () => {
-  return '/api';
+  if (env.IS_DEV && env.PROXY_ENABLED) {
+    // En développement avec proxy activé
+    return '/api';
+  }
+
+  // En production ou si le proxy est désactivé
+  return env.API_BASE_URL;
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: env.API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers':
-      'Content-Type, Authorization, X-Requested-With',
+    ...(env.CORS_ENABLED && {
+      'Access-Control-Allow-Origin': env.CORS_ORIGIN,
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers':
+        'Content-Type, Authorization, X-Requested-With',
+    }),
   },
   withCredentials: false,
 });
