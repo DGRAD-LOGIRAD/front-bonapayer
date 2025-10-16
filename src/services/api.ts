@@ -1,30 +1,14 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
-import { env } from '@/config/env';
 
-const getApiBaseUrl = () => {
-  if (env.IS_DEV && env.PROXY_ENABLED) {
-    // En développement avec proxy activé
-    return '/api';
-  }
-
-  // En production ou si le proxy est désactivé
-  return env.API_BASE_URL;
-};
-
-const API_BASE_URL = getApiBaseUrl();
+// Configuration pour utiliser le proxy
+const API_BASE_URL = '/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: env.API_TIMEOUT,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    ...(env.CORS_ENABLED && {
-      'Access-Control-Allow-Origin': env.CORS_ORIGIN,
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'Content-Type, Authorization, X-Requested-With',
-    }),
   },
   withCredentials: false,
 });
@@ -39,7 +23,6 @@ apiClient.interceptors.request.use(
       data: config.data,
       headers: config.headers,
       environment: import.meta.env.MODE,
-      protocol: window.location.protocol,
     });
     return config;
   },
@@ -67,14 +50,6 @@ apiClient.interceptors.response.use(
       url: error.config?.url,
       data: error.response?.data,
     });
-
-    // Gestion spécifique des erreurs CORS
-    if (error.message.includes('CORS') || error.message.includes('cors')) {
-      console.error(
-        '🚫 Erreur CORS détectée. Vérifiez la configuration du serveur.'
-      );
-    }
-
     return Promise.reject(error);
   }
 );
