@@ -1,70 +1,192 @@
-import type React from 'react';
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Link,  useNavigate} from 'react-router-dom';
+import ChangePasswordModal from '../modal/ChangePasswordModal';
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export function LoginForm() {
-  const [username, setUsername] = useState('patrick.mwira');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [errorFields, setErrorFields] = useState<{ username?: string; password?: string; global?: string }>({});
+  const [loading, setLoading] = useState(false);
+  //const [showModal, setShowModal] = useState<boolean>(false);
+  const navigate = useNavigate(); // pour redirection après connexion
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
 
-    console.log('Login attempt:', { username, password });
-  };
+
+
+
+
+
+
+const { login, setShowChangePasswordModal } = useAuthStore();
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setErrorFields({});
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      "http://69.62.105.205:8080/api-utilisateur/v1/authentification",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: username, password }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || data.status !== "200") {
+      setErrorFields({
+        global: data.message || "Login ou mot de passe incorrect",
+      });
+      return;
+    }
+
+    const userData = data.content;
+
+    // ✅ Enregistrer dans Zustand
+    login({
+      nom: userData.nom,
+      postnom: userData.postnom,
+      login: userData.login,
+      mail: userData.mail,
+      telephone: userData.telephone,
+      sexe: userData.sexe,
+      matricule: userData.matricule,
+      dateNaissance: userData.dateNaissance,
+      listDroit: userData.listDroit || [],
+      token: userData.token,
+      changePassword: userData.changePassword,
+    });
+
+    // ✅ Redirige vers dashboard
+    navigate("/dashboard");
+
+    // ✅ Affiche le modal par-dessus dashboard
+    if (userData.changePassword) {
+      setTimeout(() => setShowChangePasswordModal(true), 300);
+    }
+
+  } catch (error) {
+    console.error("Erreur de connexion:", error);
+    setErrorFields({
+      global: "Une erreur est survenue, veuillez réessayer.",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+/*   const ActionhowModal=()=>{
+    
+      setShowModal(true);
+  } */
 
   return (
-    <Card className='bg-white shadow-2xl'>
-      <CardContent className='p-8 space-y-6'>
-        <p className='text-gray-700 text-center'>
+    <Card className="bg-white shadow-2xl">
+      <CardContent className="p-8 space-y-6">
+        <p className="text-gray-700 text-center">
           Veuillez vous connecter ci-dessous pour accéder à votre compte.
         </p>
 
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div className='flex gap-0 border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500'>
-            <Input
-              type='text'
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              className='flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none'
-              placeholder="Nom d'utilisateur"
-            />
-            <div className='bg-gray-100 px-4 flex items-center border-l border-gray-300'>
-              <span className='text-gray-600 text-sm'>@logirad.cd</span>
+        
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Champ login */}
+          <div>
+            <div
+              className={`flex gap-0 border rounded-md overflow-hidden focus-within:ring-2 ${
+                errorFields.username ? 'border-red-500' : 'border-gray-300'
+              }`}
+            >
+              <Input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none"
+                placeholder="Nom d'utilisateur"
+              />
+              <div className="bg-gray-100 px-4 flex items-center border-l border-gray-300">
+                <span className="text-gray-600 text-sm">@logirad.cd</span>
+              </div>
             </div>
+            {errorFields.username && (
+              <p className="text-red-500 text-sm mt-1">{errorFields.username}</p>
+            )}
           </div>
 
-          <Input
-            type='password'
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder='•••'
-            className='border-gray-300'
-          />
+          {/* Champ mot de passe */}
+          <div>
+            <div
+              className={`border rounded-md ${
+                errorFields.password ? 'border-red-500' : 'border-gray-300'
+              }`}
+            >
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••"
+                className="border-gray-300"
+              />
+            </div>
+            {errorFields.password && (
+              <p className="text-red-500 text-sm mt-1">{errorFields.password}</p>
+            )}
+          </div>
 
+          {/* Bouton de connexion */}
           <Button
-            type='submit'
-            className='w-full bg-primary hover:bg-blue-700 text-white font-semibold py-6 text-base'
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary hover:bg-blue-700 text-white font-semibold py-6 text-base flex justify-center items-center"
           >
-            <ArrowRight className='mr-2 h-5 w-5' />
-            SE CONNECTER
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Connexion...
+              </>
+            ) : (
+              <>
+                <ArrowRight className="mr-2 h-5 w-5" />
+                SE CONNECTER
+              </>
+            )}
           </Button>
         </form>
 
-        <div className='text-center'>
+        <div className="text-center">
           <Link
-            to='/auth/forgot-password'
-            className='text-primary hover:text-blue-700 text-sm inline-flex items-center gap-1'
+            to="/auth/forgot-password"
+            className="text-primary hover:text-blue-700 text-sm inline-flex items-center gap-1"
           >
-            <span className='text-blue-400'>ⓘ</span>
+            <span className="text-blue-400">ⓘ</span>
             Cliquer ici si vous avez oublié votre mot de passe ?
           </Link>
         </div>
+        {/* Bandeau d’erreur global professionnel */}
+        {errorFields.global && (
+          <div
+            className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-md text-sm flex items-center gap-2 transition-all duration-300 animate-fadeIn"
+            role="alert"
+          >
+            <AlertCircle className="h-5 w-5 text-red-500" />
+            <span>{errorFields.global}</span>
+          </div>
+        )}
       </CardContent>
+
+      <ChangePasswordModal
+       // visible={showModal}
+       // onClose={() => setShowModal(false)}
+      />
     </Card>
   );
 }

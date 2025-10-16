@@ -1,40 +1,47 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
+  nom: string;
+  postnom: string;
+  login: string;
+  mail: string;
+  telephone?: string;
+  sexe?: string;
+  matricule?: string;
+  dateNaissance?: string;
+  listDroit?: any[];
+  token: string;
+  changePassword?: boolean;
 }
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
+  showChangePasswordModal: boolean;
   login: (user: User) => void;
   logout: () => void;
-  setLoading: (loading: boolean) => void;
+  setShowChangePasswordModal: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    set => ({
+    (set) => ({
       user: null,
-      isAuthenticated: true,
-      isLoading: false,
-      login: (user: User) =>
-        set({ user, isAuthenticated: true, isLoading: false }),
-      logout: () =>
-        set({ user: null, isAuthenticated: false, isLoading: false }),
-      setLoading: (loading: boolean) => set({ isLoading: loading }),
+      isAuthenticated: false,
+      showChangePasswordModal: false,
+      login: (user: User) => {
+        set({
+          user,
+          isAuthenticated: true,
+          showChangePasswordModal: user.changePassword ?? false,
+        });
+      },
+      logout: () => set({ user: null, isAuthenticated: false, showChangePasswordModal: false }),
+      setShowChangePasswordModal: (value) => set({ showChangePasswordModal: value }),
     }),
     {
-      name: 'auth-storage',
-      partialize: state => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      name: "auth-storage",
     }
   )
 );

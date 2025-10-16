@@ -424,7 +424,7 @@ function CreerBonAPayerPage() {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor='refenceLogirad'>
-                    Référence LOGIRAD
+                    Bon à payer LOGIRAD
                   </FieldLabel>
                   <FieldContent>
                     <Input
@@ -452,7 +452,7 @@ function CreerBonAPayerPage() {
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
                 <Field>
-                  <FieldLabel>Utilisateur</FieldLabel>
+                  <FieldLabel>Ordonnateur</FieldLabel>
                   <FieldContent>
                     <Select
                       value={form.watch('userName')}
