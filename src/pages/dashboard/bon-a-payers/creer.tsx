@@ -150,7 +150,7 @@ function CreerBonAPayerPage() {
       onSuccess: response => {
         if (response.code === '200') {
           toast.success('Bon à payer créé avec succès');
-          navigate(`/bon-a-payers/${response.idBonPayer}`);
+          navigate(`/dashboard/bon-a-payers/${response.idBonPayer}`);
         } else {
           const errorMessage = `Erreur: ${response.message}`;
           toast.error(errorMessage);

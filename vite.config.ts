@@ -42,6 +42,7 @@ export default defineConfig({
         },
       },
     },
+    allowedHosts: ['bonapayer.dgrad.cloud'],
   },
   build: {
     rollupOptions: {
