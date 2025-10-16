@@ -1,9 +1,12 @@
+import { Navigate } from 'react-router-dom';
+
 import { useAuthStore } from '@/stores/useAuthStore';
-import { Navigate, Outlet } from 'react-router-dom';
+
+import DashboardLayout from './dashboard-layout';
 
 function PrivateRoute() {
   const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <Outlet /> : <Navigate to='/auth/login' />;
+  return isAuthenticated ? <DashboardLayout /> : <Navigate to='/auth/login' />;
 }
 
 export default PrivateRoute;

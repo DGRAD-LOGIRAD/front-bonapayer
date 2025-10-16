@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #0f1419;
@@ -18,7 +20,7 @@
   --accent-foreground: #1e9df1;
   --destructive: #f4212e;
   --destructive-foreground: #ffffff;
-  --border: #e1eaef;
+  --border: #9ca3af;
   --input: #f7f9fa;
   --ring: #1da1f2;
   --chart-1: #1e9df1;
@@ -83,7 +85,7 @@
   --accent-foreground: #1c9cf0;
   --destructive: #f4212e;
   --destructive-foreground: #ffffff;
-  --border: #242628;
+  --border: #6b7280;
   --input: #22303c;
   --ring: #1da1f2;
   --chart-1: #1e9df1;
@@ -91,7 +93,7 @@
   --chart-3: #f7b928;
   --chart-4: #17bf63;
   --chart-5: #e0245e;
-  --sidebar: #17181c;
+  --sidebar: #14b4ee;
   --sidebar-foreground: #d9d9d9;
   --sidebar-primary: #1da1f2;
   --sidebar-primary-foreground: #ffffff;
