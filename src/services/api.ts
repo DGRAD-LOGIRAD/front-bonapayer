@@ -9,10 +9,13 @@ const getApiBaseUrl = () => {
 
   // En production, gérer les problèmes HTTPS/HTTP
   if (import.meta.env.PROD) {
-    // Si on est en HTTPS, utiliser un proxy pour éviter Mixed Content
+    // Si on est en HTTPS, utiliser allorigins.win pour éviter Mixed Content
     if (window.location.protocol === 'https:') {
-      // Utiliser un proxy CORS public (solution temporaire)
-      return 'https://cors-anywhere.herokuapp.com/http://69.62.105.205:8080/ms_bp/api';
+      // Utiliser allorigins.win comme proxy CORS
+      return (
+        'https://api.allorigins.win/raw?url=' +
+        encodeURIComponent('http://69.62.105.205:8080/ms_bp/api')
+      );
     }
     // Si on est en HTTP, utiliser l'URL directe
     return 'http://69.62.105.205:8080/ms_bp/api';
@@ -37,9 +40,14 @@ const apiClient = axios.create({
 // Intercepteur pour les requêtes
 apiClient.interceptors.request.use(
   config => {
-    // Ajouter le header X-Requested-With pour le proxy CORS
-    if (config.baseURL?.includes('cors-anywhere.herokuapp.com')) {
-      config.headers['X-Requested-With'] = 'XMLHttpRequest';
+    // Adapter la requête pour allorigins.win
+    if (config.baseURL?.includes('allorigins.win')) {
+      // Pour allorigins.win, on fait une requête GET avec l'URL complète
+      const targetUrl = config.baseURL;
+      config.method = 'GET';
+      config.url = '';
+      config.baseURL = targetUrl;
+      config.data = undefined;
     }
 
     console.log('🚀 API Request:', {
