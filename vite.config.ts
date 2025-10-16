@@ -18,4 +18,18 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://69.62.105.205:8080/ms_bp',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '/api'),
+        configure: proxy => {
+          proxy.on('error', err => {
+            console.log('proxy error', err);
+          });
+        },
+      },
+    },
+  },
 });

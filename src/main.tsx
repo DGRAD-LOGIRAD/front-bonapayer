@@ -15,9 +15,19 @@ import DashboardHomePage from './pages/dashboard/home.tsx';
 import BonAPayersPage from './pages/dashboard/bon-a-payers/index.tsx';
 import CreerBonAPayerPage from './pages/dashboard/bon-a-payers/creer.tsx';
 import BonAPayerDetailsPage from './pages/dashboard/bon-a-payers/details.tsx';
+import BonAPayerPrevisualisationPage from './pages/dashboard/bon-a-payers/previsualisation.tsx';
 import UtilisateursPage from './pages/dashboard/utilisateurs.tsx';
 import ParametresPage from './pages/dashboard/parametres.tsx';
 import { Toaster } from 'sonner';
+
+// Activer MSW en mode développement
+if (import.meta.env.DEV) {
+  const { worker } = await import('./mocks/browser');
+  worker.start({
+    onUnhandledRequest: 'bypass',
+  });
+  console.log('🎭 MSW started in development mode');
+}
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -28,12 +38,17 @@ const router = createBrowserRouter(
         <Route path='login' element={<LoginPage />} />
         <Route path='forgot-password' element={<ForgotPasswordPage />} />
       </Route>
+      <Route path='test-details/:id' element={<BonAPayerDetailsPage />} />
       <Route path='dashboard' element={<PrivateRoute />}>
         <Route index element={<DashboardHomePage />} />
         <Route path='bon-a-payers'>
           <Route index element={<BonAPayersPage />} />
           <Route path='creer' element={<CreerBonAPayerPage />} />
           <Route path=':documentId' element={<BonAPayerDetailsPage />} />
+          <Route
+            path=':documentId/previsualisation'
+            element={<BonAPayerPrevisualisationPage />}
+          />
         </Route>
         <Route path='utilisateurs' element={<UtilisateursPage />} />
         <Route path='parametres' element={<ParametresPage />} />

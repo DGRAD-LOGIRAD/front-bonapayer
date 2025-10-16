@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -28,6 +28,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { users, provinces, villes, sites } from '@/data/user';
+import { type CreateBonPayerPayload } from '@/services/api';
+import { ErrorDebug } from '@/components/ui/error-debug';
+import { useCreateBonAPayer } from '@/hooks/useBonAPayer';
 
 const bonAPayerSchema = z.object({
   numero: z.string().min(1, 'Le numéro est requis'),
@@ -48,7 +53,7 @@ const bonAPayerSchema = z.object({
   fkCompteA: z.string().min(1, 'Le compte A est requis'),
   fkCompteB: z.string().min(1, 'Le compte B est requis'),
   fkActe: z.string().min(1, "L'acte générateur est requis"),
-  fkDevise: z.enum(['USD', 'CDF'], { required_error: 'La devise est requise' }),
+  fkDevise: z.enum(['USD', 'CDF'], { message: 'La devise est requise' }),
   fkNotePerception: z.string().min(1, 'La note de perception est requise'),
   fkSite: z.string().min(1, 'Le site est requis'),
   fkVille: z.string().min(1, 'La ville est requise'),
@@ -83,24 +88,83 @@ const defaultValues: BonAPayerFormValues = {
 };
 
 function CreerBonAPayerPage() {
+  const navigate = useNavigate();
   const [payload, setPayload] = useState<BonAPayerPayload | null>(null);
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedVille, setSelectedVille] = useState<string>('');
+  const [selectedSite, setSelectedSite] = useState<string>('');
+
+  // Hook React Query pour créer un bon à payer
+  const createBonAPayerMutation = useCreateBonAPayer();
 
   const form = useForm<BonAPayerFormValues>({
     resolver: zodResolver(bonAPayerSchema),
     defaultValues,
   });
 
-  const onSubmit = (values: BonAPayerFormValues) => {
+  // Initialiser les valeurs par défaut
+  React.useEffect(() => {
+    setSelectedProvince(defaultValues.fkProvince);
+    setSelectedVille(defaultValues.fkVille);
+    setSelectedSite(defaultValues.fkSite);
+  }, []);
+
+  // Fonctions pour gérer les sélections conditionnelles
+  const handleProvinceChange = (provinceId: string) => {
+    setSelectedProvince(provinceId);
+    setSelectedVille('');
+    setSelectedSite('');
+    form.setValue('fkProvince', provinceId);
+    form.setValue('fkVille', '');
+    form.setValue('fkSite', '');
+  };
+
+  const handleVilleChange = (villeId: string) => {
+    setSelectedVille(villeId);
+    setSelectedSite('');
+    form.setValue('fkVille', villeId);
+    form.setValue('fkSite', '');
+  };
+
+  const handleSiteChange = (siteId: string) => {
+    setSelectedSite(siteId);
+    form.setValue('fkSite', siteId);
+  };
+
+  // Filtrer les villes et sites selon la sélection
+  const filteredVilles = selectedProvince
+    ? villes.filter(ville => ville.fkProvince === selectedProvince)
+    : [];
+
+  const filteredSites = selectedVille
+    ? sites.filter(site => site.fkVille === selectedVille)
+    : [];
+
+  const onSubmit = async (values: BonAPayerFormValues) => {
     const formattedMontant = Number(values.montant).toFixed(4);
-    const preparedPayload: BonAPayerPayload = {
+    const preparedPayload: CreateBonPayerPayload = {
       ...values,
       montant: formattedMontant,
       dateEcheance: format(new Date(values.dateEcheance), 'yyyy-MM-dd'),
     };
 
-    setPayload(preparedPayload);
-    toast.success('Bon à payer prêt à être envoyé au backend');
-    console.table(preparedPayload);
+    setPayload(preparedPayload as BonAPayerPayload);
+
+    createBonAPayerMutation.mutate(preparedPayload, {
+      onSuccess: response => {
+        if (response.code === '200') {
+          toast.success('Bon à payer créé avec succès');
+          navigate(`/bon-a-payers/${response.idBonPayer}`);
+        } else {
+          const errorMessage = `Erreur: ${response.message}`;
+          toast.error(errorMessage);
+        }
+      },
+      onError: error => {
+        console.error('Erreur lors de la création du bon à payer:', error);
+        toast.error('Erreur lors de la création du bon à payer');
+      },
+    });
   };
 
   return (
@@ -113,9 +177,17 @@ function CreerBonAPayerPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {createBonAPayerMutation.error && (
+            <div className='mb-6'>
+              <ErrorDebug
+                error={createBonAPayerMutation.error as Error}
+                title='Erreur lors de la création'
+              />
+            </div>
+          )}
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <section className='space-y-4'>
-              <h3 className='text-lg font-semibold text-foreground'>
+              <h3 className='text-lg font-semibold text-primary'>
                 Identifiants
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
@@ -134,7 +206,7 @@ function CreerBonAPayerPage() {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor='dateEcheance'>
-                    Date d\'échéance
+                    Date d'échéance
                   </FieldLabel>
                   <FieldContent>
                     <Input
@@ -157,7 +229,7 @@ function CreerBonAPayerPage() {
             </section>
 
             <section className='space-y-4'>
-              <h3 className='text-lg font-semibold text-foreground'>
+              <h3 className='text-lg font-semibold text-primary'>
                 Montants et actes
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
@@ -203,7 +275,9 @@ function CreerBonAPayerPage() {
                   </FieldContent>
                 </Field>
                 <Field className='md:col-span-2'>
-                  <FieldLabel htmlFor='fkActe'>Acte générateur (FK)</FieldLabel>
+                  <FieldLabel htmlFor='fkActe'>
+                    Code de l'acte générateur
+                  </FieldLabel>
                   <FieldContent>
                     <Input id='fkActe' {...form.register('fkActe')} />
                     <FieldError
@@ -241,7 +315,7 @@ function CreerBonAPayerPage() {
             </section>
 
             <section className='space-y-4'>
-              <h3 className='text-lg font-semibold text-foreground'>
+              <h3 className='text-lg font-semibold text-primary'>
                 Comptes bancaires
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
@@ -288,12 +362,14 @@ function CreerBonAPayerPage() {
             </section>
 
             <section className='space-y-4'>
-              <h3 className='text-lg font-semibold text-foreground'>
+              <h3 className='text-lg font-semibold text-primary'>
                 Références administratives
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
                 <Field>
-                  <FieldLabel htmlFor='fkContribuable'>NIF (FK)</FieldLabel>
+                  <FieldLabel htmlFor='fkContribuable'>
+                    NIF du contribuable
+                  </FieldLabel>
                   <FieldContent>
                     <Input
                       id='fkContribuable'
@@ -375,14 +451,37 @@ function CreerBonAPayerPage() {
             </section>
 
             <section className='space-y-4'>
-              <h3 className='text-lg font-semibold text-foreground'>
+              <h3 className='text-lg font-semibold text-primary'>
                 Agent et localisation
               </h3>
               <div className='grid gap-4 md:grid-cols-2'>
                 <Field>
-                  <FieldLabel htmlFor='userName'>Utilisateur</FieldLabel>
+                  <FieldLabel>Utilisateur</FieldLabel>
                   <FieldContent>
-                    <Input id='userName' {...form.register('userName')} />
+                    <Select
+                      value={form.watch('userName')}
+                      onValueChange={value => {
+                        form.setValue('userName', value);
+                        const user = users.find(u => u.username === value);
+                        if (user) {
+                          form.setValue('fkUserCreate', user.fkUserCreate);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Sélectionner un utilisateur' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map(user => (
+                          <SelectItem
+                            key={user.fkUserCreate}
+                            value={user.username}
+                          >
+                            {user.username}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FieldError
                       errors={
                         form.formState.errors.userName && [
@@ -393,42 +492,54 @@ function CreerBonAPayerPage() {
                   </FieldContent>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor='fkUserCreate'>
-                    Utilisateur (FK)
-                  </FieldLabel>
+                  <FieldLabel>Province</FieldLabel>
                   <FieldContent>
-                    <Input
-                      id='fkUserCreate'
-                      {...form.register('fkUserCreate')}
-                    />
+                    <Select
+                      value={selectedProvince}
+                      onValueChange={handleProvinceChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Sélectionner une province' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {provinces.map(province => (
+                          <SelectItem
+                            key={province.fkProvince}
+                            value={province.fkProvince}
+                          >
+                            {province.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FieldError
                       errors={
-                        form.formState.errors.fkUserCreate && [
-                          {
-                            message: form.formState.errors.fkUserCreate.message,
-                          },
+                        form.formState.errors.fkProvince && [
+                          { message: form.formState.errors.fkProvince.message },
                         ]
                       }
                     />
                   </FieldContent>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor='fkSite'>Site (FK)</FieldLabel>
+                  <FieldLabel>Ville</FieldLabel>
                   <FieldContent>
-                    <Input id='fkSite' {...form.register('fkSite')} />
-                    <FieldError
-                      errors={
-                        form.formState.errors.fkSite && [
-                          { message: form.formState.errors.fkSite.message },
-                        ]
-                      }
-                    />
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor='fkVille'>Ville (FK)</FieldLabel>
-                  <FieldContent>
-                    <Input id='fkVille' {...form.register('fkVille')} />
+                    <Select
+                      value={selectedVille}
+                      onValueChange={handleVilleChange}
+                      disabled={!selectedProvince}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Sélectionner une ville' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredVilles.map(ville => (
+                          <SelectItem key={ville.fkVille} value={ville.fkVille}>
+                            {ville.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FieldError
                       errors={
                         form.formState.errors.fkVille && [
@@ -439,13 +550,28 @@ function CreerBonAPayerPage() {
                   </FieldContent>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor='fkProvince'>Province (FK)</FieldLabel>
+                  <FieldLabel>Site</FieldLabel>
                   <FieldContent>
-                    <Input id='fkProvince' {...form.register('fkProvince')} />
+                    <Select
+                      value={selectedSite}
+                      onValueChange={handleSiteChange}
+                      disabled={!selectedVille}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Sélectionner un site' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredSites.map(site => (
+                          <SelectItem key={site.fkSite} value={site.fkSite}>
+                            {site.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FieldError
                       errors={
-                        form.formState.errors.fkProvince && [
-                          { message: form.formState.errors.fkProvince.message },
+                        form.formState.errors.fkSite && [
+                          { message: form.formState.errors.fkSite.message },
                         ]
                       }
                     />
@@ -462,7 +588,14 @@ function CreerBonAPayerPage() {
               >
                 Réinitialiser
               </Button>
-              <Button type='submit'>Préparer la requête</Button>
+              <Button
+                type='submit'
+                disabled={createBonAPayerMutation.isPending}
+              >
+                {createBonAPayerMutation.isPending
+                  ? 'Création en cours...'
+                  : 'Créer le bon à payer'}
+              </Button>
             </div>
           </form>
         </CardContent>

@@ -34,7 +34,11 @@ import {
   type SidebarInnerVariants,
   type SidebarGapVariants,
 } from './sidebar-variants';
-import { SidebarContext, useSidebar } from './sidebar-hooks';
+import {
+  SidebarContext,
+  useSidebar,
+  type SidebarContextProps,
+} from './sidebar-hooks';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;

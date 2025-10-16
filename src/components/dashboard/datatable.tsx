@@ -58,7 +58,7 @@ function Datatable({
   data,
   title = 'Derniers bons à payer',
   description = 'Les 10 derniers bons à payer enregistrés dans le système',
-  ctaLabel = 'Enregistrer un bon à payer',
+  ctaLabel = 'Fractionner un bon à payer',
   ctaHref = '/dashboard/bon-a-payers/creer',
 }: DatatableProps) {
   const columns = useMemo(
@@ -132,9 +132,7 @@ function Datatable({
             size='sm'
             className='text-wrap whitespace-nowrap'
           >
-            <Link
-              to={`/dashboard/bon-a-payers/${info.row.original.documentId}`}
-            >
+            <Link to={`/dashboard/bon-a-payers/${info.row.original.id}`}>
               <Eye className='h-4 w-4 mr-2' />
               Voir plus
             </Link>
