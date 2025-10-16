@@ -57,9 +57,10 @@ function BonAPayerDetailsPage() {
   }
 
   const formatCurrency = (amount: number) => {
+    const currency = data.fkDevise || 'USD'; // Valeur par défaut si fkDevise est undefined
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: data.fkDevise,
+      currency: currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(amount);
@@ -242,8 +243,8 @@ function BonAPayerDetailsPage() {
                           Fraction #{index + 1}
                         </h4>
                         <span className='text-xs bg-gray-100 px-2 py-1 rounded font-mono'>
-                          Type{' '}
-                          {(detail as { typeBonPayer: number }).typeBonPayer}
+                          Type (
+                          {(detail as { typeBonPayer: number }).typeBonPayer}/3)
                         </span>
                       </div>
 

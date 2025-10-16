@@ -6,6 +6,7 @@ import { QueryProvider } from './providers';
 import { Route, RouterProvider, createRoutesFromElements } from 'react-router';
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { SuspenseWrapper } from '@/components/ui/suspense-wrapper';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Toaster } from 'sonner';
 
 const AuthLayout = lazy(() => import('./layout/auth-layout.tsx'));
@@ -104,25 +105,31 @@ const router = createBrowserRouter(
           <Route
             path='creer'
             element={
-              <SuspenseWrapper>
-                <CreerBonAPayerPage />
-              </SuspenseWrapper>
+              <ErrorBoundary>
+                <SuspenseWrapper loadingText='Chargement du formulaire...'>
+                  <CreerBonAPayerPage />
+                </SuspenseWrapper>
+              </ErrorBoundary>
             }
           />
           <Route
             path=':documentId'
             element={
-              <SuspenseWrapper>
-                <BonAPayerDetailsPage />
-              </SuspenseWrapper>
+              <ErrorBoundary>
+                <SuspenseWrapper loadingText='Chargement des détails...'>
+                  <BonAPayerDetailsPage />
+                </SuspenseWrapper>
+              </ErrorBoundary>
             }
           />
           <Route
             path=':documentId/previsualisation'
             element={
-              <SuspenseWrapper>
-                <BonAPayerPrevisualisationPage />
-              </SuspenseWrapper>
+              <ErrorBoundary>
+                <SuspenseWrapper loadingText='Chargement de la prévisualisation...'>
+                  <BonAPayerPrevisualisationPage />
+                </SuspenseWrapper>
+              </ErrorBoundary>
             }
           />
         </Route>
@@ -164,9 +171,11 @@ const router = createBrowserRouter(
 );
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryProvider>
-      <RouterProvider router={router} />
-      <Toaster richColors />
-    </QueryProvider>
+    <ErrorBoundary>
+      <QueryProvider>
+        <RouterProvider router={router} />
+        <Toaster richColors />
+      </QueryProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
