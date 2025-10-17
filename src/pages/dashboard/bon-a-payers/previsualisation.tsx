@@ -41,7 +41,6 @@ const formatCurrency = (amount: number, currency: string) => {
     style: 'currency',
     currency: currency,
     currencyDisplay: 'code',
-    // afficher le currency à la fin
 
     minimumFractionDigits: 0,
     maximumFractionDigits: 4,
