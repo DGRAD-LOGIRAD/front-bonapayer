@@ -37,23 +37,19 @@ interface BonAPayerData {
 
 // Fonction pour formater les montants avec les bonnes devises
 const formatCurrency = (amount: number, currency: string) => {
-  const formattedAmount = new Intl.NumberFormat('fr-BE', {
+  const formattedAmount = new Intl.NumberFormat('en-US', {
     style: 'currency',
+    currency: currency,
+    currencyDisplay: 'code',
+    // afficher le currency à la fin
+
     minimumFractionDigits: 0,
     maximumFractionDigits: 4,
-  }).format(amount);
-
-  // Mapper les devises vers les codes appropriés
-  const currencyMap: { [key: string]: string } = {
-    USD: 'USD',
-    CDF: 'CDF',
-    usd: 'USD',
-    cdf: 'CDF',
-  };
-
-  const currencyCode = currencyMap[currency] || currency;
-
-  return `${formattedAmount}  ${currencyCode}`;
+  })
+    .format(amount)
+    .replace(/,/g, ' ')
+    .replace('.', ',');
+  return formattedAmount;
 };
 
 interface ErrorBoundaryState {
@@ -330,7 +326,7 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.labelCell]}>
-              Référence Bon à payer Parent:
+              Numéro Bon à payer LOGIRAD:
             </Text>
             <Text style={[styles.tableCell, styles.valueCell]}>
               {data.refernceBonMere || '-'}
