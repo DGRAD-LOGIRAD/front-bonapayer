@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import DashboardLayout from './dashboard-layout';
 
 function PrivateRoute() {
-  const { isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore();
   return isAuthenticated ? <DashboardLayout /> : <Navigate to='/auth/login' />;
 }
 
