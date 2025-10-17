@@ -14,6 +14,10 @@ export function useBonAPayer(id: number) {
       return response.data; // L'API retourne déjà { data: {...}, message: 'success', status: '200' }
     },
     enabled: !!id && id > 0,
+    staleTime: 30 * 1000, // 30 secondes - données fraîches plus souvent
+    gcTime: 5 * 60 * 1000, // 5 minutes en cache
+    retry: 2,
+    retryDelay: 1000,
   });
 }
 
@@ -24,14 +28,19 @@ export function useCreateBonAPayer() {
     mutationFn: (payload: CreateBonPayerPayload) =>
       apiService.createBonPayer(payload),
     onSuccess: data => {
+      // Invalider toutes les requêtes liées aux bons à payer
       queryClient.invalidateQueries({
         queryKey: bonAPayerKeys.all,
       });
 
-      queryClient.setQueryData(bonAPayerKeys.details(data.idBonPayer), {
-        data: data,
-        message: 'success',
-        status: '200',
+      // Précharger les données du bon à payer créé
+      queryClient.prefetchQuery({
+        queryKey: bonAPayerKeys.details(data.idBonPayer),
+        queryFn: async () => {
+          const response = await apiService.getBonPayerDetails(data.idBonPayer);
+          return response.data;
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes
       });
     },
     onError: error => {

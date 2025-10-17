@@ -243,8 +243,12 @@ function BonAPayerDetailsPage() {
                           Fraction #{index + 1}
                         </h4>
                         <span className='text-xs bg-gray-100 px-2 py-1 rounded font-mono'>
-                          Type (
-                          {(detail as { typeBonPayer: number }).typeBonPayer}/3)
+                          Type{' '}
+                          {(detail as { typeBonPayer: number }).typeBonPayer} :
+                          {(detail as { typeBonPayer: number }).typeBonPayer ===
+                          1
+                            ? '2/3'
+                            : '1/3'}
                         </span>
                       </div>
 

@@ -386,8 +386,8 @@ export default function PrevisualisationPage() {
                   : 'text-gray-600'
               }
             >
-              Bon à payer type {fraction.typeBonPayer || 0} (
-              {fraction.typeBonPayer === 1 ? '1/3' : '2/3'})
+              Type {fraction.typeBonPayer || 0} :
+              {fraction.typeBonPayer === 1 ? '2/3' : '1/3'}
             </Button>
           ))}
         </div>
