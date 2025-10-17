@@ -1,47 +1,55 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface User {
+  id: string;
   nom: string;
   postnom: string;
   login: string;
   mail: string;
-  telephone?: string;
-  sexe?: string;
-  matricule?: string;
-  dateNaissance?: string;
-  listDroit?: any[];
+  telephone: string;
+  sexe: string;
+  matricule: string;
+  dateNaissance: string;
+  listDroit: string[];
   token: string;
-  changePassword?: boolean;
+  status: string;
 }
 
-interface AuthState {
+interface AuthStore {
   user: User | null;
-  isAuthenticated: boolean;
   showChangePasswordModal: boolean;
-  login: (user: User) => void;
+  passwordModalShown: boolean;
+  login: (userData: User) => void;
   logout: () => void;
-  setShowChangePasswordModal: (value: boolean) => void;
+  setShowChangePasswordModal: (show: boolean) => void;
+  updateUserStatus: (status: string) => void;
+  setPasswordModalShown: (shown: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    set => ({
       user: null,
-      isAuthenticated: false,
       showChangePasswordModal: false,
-      login: (user: User) => {
+      passwordModalShown: false,
+      login: userData => set({ user: userData }),
+      logout: () =>
         set({
-          user,
-          isAuthenticated: true,
-          showChangePasswordModal: user.changePassword ?? false,
-        });
-      },
-      logout: () => set({ user: null, isAuthenticated: false, showChangePasswordModal: false }),
-      setShowChangePasswordModal: (value) => set({ showChangePasswordModal: value }),
+          user: null,
+          showChangePasswordModal: false,
+          passwordModalShown: false,
+        }),
+      setShowChangePasswordModal: show =>
+        set({ showChangePasswordModal: show }),
+      updateUserStatus: status =>
+        set(state => ({
+          user: state.user ? { ...state.user, status } : null,
+        })),
+      setPasswordModalShown: shown => set({ passwordModalShown: shown }),
     }),
     {
-      name: "auth-storage",
+      name: 'auth-storage',
     }
   )
 );
