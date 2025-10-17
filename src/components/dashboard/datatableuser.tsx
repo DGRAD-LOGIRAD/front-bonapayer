@@ -27,7 +27,7 @@ export type Utilisateur = {
   id: number;
   nom: string;
   prenom: string;
-  mail: string;
+  email: string;
   etat: number;
   creation: string;
 };
@@ -54,7 +54,7 @@ export default function DataTableUser() {
           id: u.id,
           nom: u.nom,
           prenom: u.prenom,
-          email: u.mail,
+          email: u.email,
           etat: u.etat,
           creation: new Date().toISOString(),
         }));
@@ -145,7 +145,7 @@ export default function DataTableUser() {
         ),
       }),
     ],
-    []
+    [columnHelper]
   );
 
   const table = useReactTable({

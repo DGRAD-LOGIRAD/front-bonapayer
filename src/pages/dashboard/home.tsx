@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Datatable from '@/components/dashboard/datatable';
 import Indicateurs from '@/components/dashboard/indicateurs';
 import ChangePasswordModal from '@/components/modal/ChangePasswordModal';
