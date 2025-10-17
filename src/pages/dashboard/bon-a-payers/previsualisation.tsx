@@ -35,6 +35,27 @@ interface BonAPayerData {
   numero?: string;
 }
 
+// Fonction pour formater les montants avec les bonnes devises
+const formatCurrency = (amount: number, currency: string) => {
+  const formattedAmount = new Intl.NumberFormat('fr-BE', {
+    style: 'currency',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+  }).format(amount);
+
+  // Mapper les devises vers les codes appropriés
+  const currencyMap: { [key: string]: string } = {
+    USD: 'USD',
+    CDF: 'CDF',
+    usd: 'USD',
+    cdf: 'CDF',
+  };
+
+  const currencyCode = currencyMap[currency] || currency;
+
+  return `${formattedAmount}  ${currencyCode}`;
+};
+
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
@@ -265,13 +286,10 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.labelCell]}>
-              Montant ordonnancé en chiffre / lettre:
+              Montant ordonnancé en chiffre :
             </Text>
             <Text style={[styles.tableCell, styles.valueCell]}>
-              {new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: data.fkDevise,
-              }).format(data.montant)}
+              {formatCurrency(data.montant, data.fkDevise)}
             </Text>
           </View>
           <View style={styles.tableRow}>
