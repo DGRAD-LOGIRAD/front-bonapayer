@@ -8,7 +8,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { type CompteBancaire } from '@/data/user';
+import { type CompteBancaire } from '@/services/api';
 
 interface CompteSelectionModalProps {
   isOpen: boolean;
@@ -31,7 +31,7 @@ export function CompteSelectionModal({
 
   const banques = useMemo(() => {
     const uniqueBanques = Array.from(
-      new Set(comptes.map(compte => compte.libellebanque))
+      new Set(comptes.map(compte => compte.intituleBanque))
     );
     return uniqueBanques;
   }, [comptes]);
@@ -46,11 +46,11 @@ export function CompteSelectionModal({
   const filteredComptes = useMemo(() => {
     return comptes.filter(compte => {
       const matchesSearch =
-        compte.libelle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        compte.libellebanque.toLowerCase().includes(searchTerm.toLowerCase());
+        compte.intitule.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        compte.intituleBanque.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesBanque =
-        selectedBanque === '' || compte.libellebanque === selectedBanque;
+        selectedBanque === '' || compte.intituleBanque === selectedBanque;
       const matchesDevise =
         selectedDevise === '' || compte.devise === selectedDevise;
 
@@ -126,10 +126,10 @@ export function CompteSelectionModal({
                   <div className='flex justify-between items-center'>
                     <div className='flex-1 min-w-0'>
                       <h4 className='text-sm font-medium text-gray-900 truncate'>
-                        {compte.libelle}
+                        {compte.intitule}
                       </h4>
                       <p className='text-xs text-gray-500 truncate'>
-                        {compte.libellebanque}
+                        {compte.intituleBanque}
                       </p>
                       <p className='text-xs text-gray-400 font-mono mt-1'>
                         {compte.id}

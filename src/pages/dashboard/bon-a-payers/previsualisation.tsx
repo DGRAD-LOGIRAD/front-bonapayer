@@ -35,6 +35,22 @@ interface BonAPayerData {
   numero?: string;
 }
 
+// Fonction pour formater les montants avec les bonnes devises
+const formatCurrency = (amount: number, currency: string) => {
+  const formattedAmount = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+    currencyDisplay: 'code',
+
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+  })
+    .format(amount)
+    .replace(/,/g, ' ')
+    .replace('.', ',');
+  return formattedAmount;
+};
+
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
@@ -265,13 +281,10 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.labelCell]}>
-              Montant ordonnancé en chiffre / lettre:
+              Montant ordonnancé en chiffre :
             </Text>
             <Text style={[styles.tableCell, styles.valueCell]}>
-              {new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: data.fkDevise,
-              }).format(data.montant)}
+              {formatCurrency(data.montant, data.fkDevise)}
             </Text>
           </View>
           <View style={styles.tableRow}>
@@ -312,7 +325,7 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.labelCell]}>
-              Référence Bon à payer Parent:
+              Numéro Bon à payer LOGIRAD:
             </Text>
             <Text style={[styles.tableCell, styles.valueCell]}>
               {data.refernceBonMere || '-'}
@@ -386,8 +399,8 @@ export default function PrevisualisationPage() {
                   : 'text-gray-600'
               }
             >
-              Bon à payer type {fraction.typeBonPayer || 0} (
-              {fraction.typeBonPayer === 1 ? '1/3' : '2/3'})
+              Type {fraction.typeBonPayer || 0} :
+              {fraction.typeBonPayer === 1 ? '2/3' : '1/3'}
             </Button>
           ))}
         </div>
