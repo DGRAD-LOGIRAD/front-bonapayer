@@ -251,7 +251,7 @@ function CreerBonAPayerPage() {
   };
 
   // Filtrer les comptes selon la devise sélectionnée
-  const getFilteredComptes = (excludeCompte?: CompteBancaire) => {
+  const getFilteredComptes = () => {
     if (!comptesBancairesQuery.data) return [];
 
     let comptes = comptesBancairesQuery.data;
@@ -259,11 +259,6 @@ function CreerBonAPayerPage() {
     // Si une devise est déjà sélectionnée, filtrer par cette devise
     if (selectedDevise) {
       comptes = comptes.filter(compte => compte.devise === selectedDevise);
-    }
-
-    // Exclure le compte déjà sélectionné
-    if (excludeCompte) {
-      comptes = comptes.filter(compte => compte.id !== excludeCompte.id);
     }
 
     return comptes;
@@ -414,9 +409,14 @@ function CreerBonAPayerPage() {
                               </Button>
                             </div>
                           </div>
-                          <span className='text-xs text-gray-500 font-mono mt-1'>
-                            {selectedCompteA.id}
-                          </span>
+                          <div className='flex flex-col gap-1 mt-1'>
+                            <span className='text-xs text-gray-500'>
+                              {selectedCompteA.intituleBanque}
+                            </span>
+                            <span className='text-xs text-gray-500 font-mono'>
+                              {selectedCompteA.id}
+                            </span>
+                          </div>
                         </div>
                       ) : (
                         <div className='flex flex-col items-start w-full text-left'>
@@ -483,9 +483,14 @@ function CreerBonAPayerPage() {
                               </Button>
                             </div>
                           </div>
-                          <span className='text-xs text-gray-500 font-mono mt-1'>
-                            {selectedCompteB.id}
-                          </span>
+                          <div className='flex flex-col gap-1 mt-1'>
+                            <span className='text-xs text-gray-500'>
+                              {selectedCompteB.intituleBanque}
+                            </span>
+                            <span className='text-xs text-gray-500 font-mono'>
+                              {selectedCompteB.id}
+                            </span>
+                          </div>
                         </div>
                       ) : (
                         <div className='flex flex-col items-start w-full text-left'>
@@ -869,7 +874,7 @@ function CreerBonAPayerPage() {
             isOpen={isCompteAModalOpen}
             onClose={() => setIsCompteAModalOpen(false)}
             onSelect={handleCompteASelect}
-            comptes={getFilteredComptes(selectedCompteB || undefined)}
+            comptes={getFilteredComptes()}
             title='Sélectionner le compte A'
           />
 
@@ -877,7 +882,7 @@ function CreerBonAPayerPage() {
             isOpen={isCompteBModalOpen}
             onClose={() => setIsCompteBModalOpen(false)}
             onSelect={handleCompteBSelect}
-            comptes={getFilteredComptes(selectedCompteA || undefined)}
+            comptes={getFilteredComptes()}
             title='Sélectionner le compte B'
           />
         </>
