@@ -7,6 +7,7 @@ import { getBaseUrl } from '../api/api';
 import Loading from '../loading/Loading';
 import { useModalStore } from '@/stores/useModalStore';
 import { useUserStore } from '@/stores/useUserStore';
+import { useAuthStore } from '@/stores';
 
 interface Agent {
   id: number;
@@ -38,6 +39,8 @@ export default function UserModal() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
+  const { user } = useAuthStore();
+
   // 🔹 Charger les agents si modal visible et liste ouverte
   useEffect(() => {
     if (showModal && showAgentList) {
@@ -66,7 +69,7 @@ export default function UserModal() {
       return;
     }
 
-    const data = { login, mail, fkAgent, fkUtilisateurCreat: 1 };
+    const data = { login, mail, fkAgent, fkUtilisateurCreat: user?.id };
 
     axios
       .post(`${getBaseUrl()}/api-utilisateur/v1/saveCompte`, data, {

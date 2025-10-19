@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +8,8 @@ import { ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import ChangePasswordModal from '../modal/ChangePasswordModal';
 import { useAuthStore } from '@/stores/useAuthStore';
+import axios from 'axios';
+import { getBaseUrl } from '../api/api';
 
 export function LoginForm() {
   const [username, setUsername] = useState('');
@@ -16,9 +20,8 @@ export function LoginForm() {
     global?: string;
   }>({});
   const [loading, setLoading] = useState(false);
-  //const [showModal, setShowModal] = useState<boolean>(false);
-  const navigate = useNavigate(); // pour redirection après connexion
 
+  const navigate = useNavigate();
   const { login, setShowChangePasswordModal } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,63 +29,60 @@ export function LoginForm() {
     setErrorFields({});
     setLoading(true);
 
+    const url = `${getBaseUrl()}/api-utilisateur/v1/authentification`;
+
     try {
-      const response = await fetch(
-        'http://69.62.105.205:8080/api-utilisateur/v1/authentification',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ login: username, password }),
-        }
+      const res = await axios.post(
+        url,
+        { login: username, password },
+        { validateStatus: () => true }
       );
 
-      const data = await response.json();
-      // alert(data.status)
-      if (!response.ok || (data.status !== '200' && data.status !== '300')) {
+      const data = res.data;
+
+      if (data.status === '200' || data.status === '300') {
+        const userData = data.content;
+
+        // Stockage dans Zustand
+        login({
+          id: userData.id,
+          nom: userData.nom,
+          postnom: userData.postnom,
+          login: userData.login,
+          mail: userData.mail,
+          telephone: userData.telephone,
+          sexe: userData.sexe,
+          matricule: userData.matricule,
+          dateNaissance: userData.dateNaissance,
+          listDroit: userData.listDroit || [],
+          token: userData.token,
+          status: data.status,
+          password: password,
+        });
+
+        navigate('/dashboard');
+
+        if (userData.changePassword) {
+          setTimeout(() => setShowChangePasswordModal(true), 300);
+        }
+      } else if (data.status === '400') {
         setErrorFields({
           global: data.message || 'Login ou mot de passe incorrect',
         });
-        // return;
+      } else {
+        setErrorFields({
+          global: data.message || 'Erreur inattendue, veuillez réessayer.',
+        });
       }
-
-      const userData = data.content;
-
-      // ✅ Enregistrer dans Zustand
-      login({
-        id: userData.id,
-        nom: userData.nom,
-        postnom: userData.postnom,
-        login: userData.login,
-        mail: userData.mail,
-        telephone: userData.telephone,
-        sexe: userData.sexe,
-        matricule: userData.matricule,
-        dateNaissance: userData.dateNaissance,
-        listDroit: userData.listDroit || [],
-        token: userData.token,
-        status: data.status,
-      });
-
-      navigate('/dashboard');
-
-      // ✅ Affiche le modal par-dessus dashboard
-      if (userData.changePassword && data.status === '300') {
-        setTimeout(() => setShowChangePasswordModal(true), 300);
-      }
-    } catch (error) {
-      console.error('Erreur de connexion:', error);
+    } catch (err) {
+      console.error('Erreur de connexion:', err);
       setErrorFields({
-        global: 'Une erreur est survenue, veuillez réessayer.',
+        global: 'Erreur réseau, veuillez réessayer.',
       });
     } finally {
       setLoading(false);
     }
   };
-
-  /*   const ActionhowModal=()=>{
-    
-      setShowModal(true);
-  } */
 
   return (
     <Card className='bg-white shadow-2xl'>
@@ -92,7 +92,6 @@ export function LoginForm() {
         </p>
 
         <form onSubmit={handleSubmit} className='space-y-4'>
-          {/* Champ login */}
           <div>
             <div
               className={`flex gap-0 border rounded-md overflow-hidden focus-within:ring-2 ${
@@ -117,7 +116,6 @@ export function LoginForm() {
             )}
           </div>
 
-          {/* Champ mot de passe */}
           <div>
             <div
               className={`border rounded-md ${
@@ -139,7 +137,6 @@ export function LoginForm() {
             )}
           </div>
 
-          {/* Bouton de connexion */}
           <Button
             type='submit'
             disabled={loading}
@@ -167,7 +164,7 @@ export function LoginForm() {
             Cliquer ici si vous avez oublié votre mot de passe ?
           </Link>
         </div>
-        {/* Bandeau d’erreur global professionnel */}
+
         {errorFields.global && (
           <div
             className='bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-md text-sm flex items-center gap-2 transition-all duration-300 animate-fadeIn'
@@ -179,10 +176,7 @@ export function LoginForm() {
         )}
       </CardContent>
 
-      <ChangePasswordModal
-      // visible={showModal}
-      // onClose={() => setShowModal(false)}
-      />
+      <ChangePasswordModal />
     </Card>
   );
 }

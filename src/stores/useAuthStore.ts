@@ -14,6 +14,7 @@ interface User {
   listDroit: string[];
   token: string;
   status: string;
+  password: string;
 }
 
 interface AuthStore {
