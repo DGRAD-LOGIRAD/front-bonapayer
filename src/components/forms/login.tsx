@@ -66,8 +66,8 @@ export function LoginForm() {
       navigate('/dashboard');
 
       // ✅ Affiche le modal par-dessus dashboard
-      if (userData.changePassword) {
-        setTimeout(() => setShowChangePasswordModal(true), 200);
+      if (userData.changePassword && data.status === '300') {
+        setTimeout(() => setShowChangePasswordModal(true), 300);
       }
     } catch (error) {
       console.error('Erreur de connexion:', error);

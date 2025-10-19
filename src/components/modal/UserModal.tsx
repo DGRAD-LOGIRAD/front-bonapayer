@@ -5,6 +5,8 @@ import axios from 'axios';
 import { Button } from '../ui/button';
 import { getBaseUrl } from '../api/api';
 import Loading from '../loading/Loading';
+import { useModalStore } from '@/stores/useModalStore';
+import { useUserStore } from '@/stores/useUserStore';
 
 interface Agent {
   id: number;
@@ -16,52 +18,44 @@ interface Agent {
   telephone: string;
 }
 
-interface UserModalProps {
-  visible: boolean;
-  onClose: () => void;
-}
+export default function UserModal() {
+  // 🔹 Store pour gérer l'affichage
+  const showModal = useModalStore(state => state.showUserModal);
+  const setShowModal = useModalStore(state => state.setShowUserModal);
+  const { fetchUsers } = useUserStore();
 
-export default function UserModal({ visible, onClose }: UserModalProps) {
-  const [login, setLogin] = useState<string>('');
-  const [mail, setMail] = useState<string>('');
+  const [login, setLogin] = useState('');
+  const [mail, setMail] = useState('');
   const [fkAgent, setFkAgent] = useState<number | null>(null);
   const [agentInfo, setAgentInfo] = useState<Agent | null>(null);
-  const [showAgentList, setShowAgentList] = useState<boolean>(false);
+  const [showAgentList, setShowAgentList] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [search, setSearch] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [errors, setErrors] = useState<{
-    login?: string;
-    mail?: string;
-    fkAgent?: string;
-    backend?: string;
-  }>({});
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Pagination
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
+  // 🔹 Charger les agents si modal visible et liste ouverte
   useEffect(() => {
-    if (visible && showAgentList) {
+    if (showModal && showAgentList) {
       setLoading(true);
       axios
         .get(`${getBaseUrl()}/api-utilisateur/v1/getListAllAgent`, {
-          headers: { Authorization: `Bearer 123` },
+          headers: { Authorization: 'Bearer 123' },
         })
-        .then(res => {
-          setAgents(res.data.content);
-          setCurrentPage(1);
-        })
+        .then(res => setAgents(res.data.content || []))
         .catch(err => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [visible, showAgentList]);
+  }, [showModal, showAgentList]);
 
-  if (!visible) return null;
+  if (!showModal) return null;
 
   const handleSave = () => {
     setErrors({});
-    //  const newErrors: any = {};
     const newErrors: Record<string, string> = {};
     if (!login) newErrors.login = 'Le login est obligatoire';
     if (!mail) newErrors.mail = "L'email est obligatoire";
@@ -72,12 +66,7 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
       return;
     }
 
-    const data = {
-      login,
-      mail,
-      fkAgent,
-      fkUtilisateurCreat: 1, // par défaut
-    };
+    const data = { login, mail, fkAgent, fkUtilisateurCreat: 1 };
 
     axios
       .post(`${getBaseUrl()}/api-utilisateur/v1/saveCompte`, data, {
@@ -85,7 +74,8 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
       })
       .then(() => {
         alert('✅ Utilisateur enregistré avec succès !');
-        onClose();
+        setShowModal(false);
+        fetchUsers();
       })
       .catch(err => {
         if (err.response?.data?.message) {
@@ -96,7 +86,7 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
       });
   };
 
-  // Filtrer et paginer
+  // 🔹 Filtrer et paginer
   const filteredAgents = agents.filter(a =>
     a.nomComplet.toLowerCase().includes(search.toLowerCase())
   );
@@ -190,7 +180,7 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
 
             <div className='flex justify-end gap-3 mt-6'>
               <button
-                onClick={onClose}
+                onClick={() => setShowModal(false)}
                 className='bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md'
               >
                 Annuler
@@ -205,10 +195,10 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
           </>
         ) : (
           <>
+            {/* Liste des agents avec recherche et pagination */}
             <h2 className='text-xl font-bold text-primary mb-4 text-center'>
               Liste des Agents
             </h2>
-
             <input
               type='text'
               placeholder='Rechercher un agent...'
@@ -216,7 +206,6 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
               onChange={e => setSearch(e.target.value)}
               className='w-full border border-gray-300 rounded-md p-2 mb-3 focus:ring-2 focus:ring-blue-500'
             />
-
             {loading ? (
               <Loading />
             ) : (
@@ -272,7 +261,6 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
                 </table>
               </div>
             )}
-
             <div className='flex justify-center mt-6 gap-2 flex-wrap'>
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -300,7 +288,6 @@ export default function UserModal({ visible, onClose }: UserModalProps) {
                 Suivant
               </button>
             </div>
-
             <div className='text-right mt-4'>
               <button
                 onClick={() => setShowAgentList(false)}
