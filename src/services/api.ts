@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, type AxiosResponse } from 'axios';
 
 // Configuration pour utiliser le proxy
 const API_BASE_URL = '/api';
@@ -12,6 +12,121 @@ const apiClient = axios.create({
   },
   withCredentials: false,
 });
+
+// Client séparé pour les registres (sans baseURL pour utiliser le proxy /ms-bp)
+const registresClient = axios.create({
+  baseURL: '', // Pas de baseURL pour utiliser directement /ms-bp/reg/...
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+  withCredentials: false,
+});
+
+// Intercepteurs pour le client principal
+apiClient.interceptors.request.use(
+  config => {
+    console.log('🚀 API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      data: config.data,
+      headers: config.headers,
+      environment: import.meta.env.MODE,
+    });
+    return config;
+  },
+  error => {
+    console.error('❌ Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+apiClient.interceptors.response.use(
+  (response: AxiosResponse) => {
+    console.log('✅ API Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.config.url,
+      data: response.data,
+    });
+    return response;
+  },
+  (error: AxiosError) => {
+    console.error('❌ API Error:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data,
+    });
+
+    // Transformer l'erreur Axios en format standard
+    const apiError = {
+      status: error.response?.status || 500,
+      message:
+        (error.response?.data as { message?: string })?.message ||
+        error.message,
+      code: error.code,
+    };
+
+    return Promise.reject(apiError);
+  }
+);
+
+// Intercepteurs pour le client des registres
+registresClient.interceptors.request.use(
+  config => {
+    console.log('🚀 Registres Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      data: config.data,
+      headers: config.headers,
+      environment: import.meta.env.MODE,
+    });
+    return config;
+  },
+  error => {
+    console.error('❌ Registres Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+registresClient.interceptors.response.use(
+  (response: AxiosResponse) => {
+    console.log('✅ Registres Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.config.url,
+      data: response.data,
+    });
+    return response;
+  },
+  (error: AxiosError) => {
+    console.error('❌ Registres Error:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      data: error.response?.data,
+    });
+
+    // Transformer l'erreur Axios en format standard
+    const apiError = {
+      status: error.response?.status || 500,
+      message:
+        (error.response?.data as { message?: string })?.message ||
+        error.message,
+      code: error.code,
+    };
+
+    return Promise.reject(apiError);
+  }
+);
 
 export interface CreateBonPayerResponse {
   référenceBonPayer: string;
@@ -354,7 +469,7 @@ export const apiService = {
     }
   ): Promise<BonAPayerRegistresResponse> {
     try {
-      const response = await apiClient.post<BonAPayerRegistresResponse>(
+      const response = await registresClient.post<BonAPayerRegistresResponse>(
         '/ms-bp/reg/api/v1/bon-a-payer',
         {
           pagination,
