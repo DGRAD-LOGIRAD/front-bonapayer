@@ -2,11 +2,25 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
-import { useGetBonPayers } from '@/hooks/useBonAPayer';
+import { useBonAPayerRegistres } from '@/hooks/useBonAPayer';
 
 function BonAPayersPage() {
   const [search, setSearch] = useState('');
-  const { data: bonAPayers } = useGetBonPayers();
+  const {
+    data: bonAPayers,
+    isLoading,
+    error,
+    isError,
+  } = useBonAPayerRegistres(
+    { pageSize: 10, page: 1 },
+    {
+      contribuableNif: '*',
+      contribuableName: '*',
+      reference_bon_a_payer_logirad: '*',
+    }
+  );
+
+  console.log('Hook state:', { bonAPayers, isLoading, error, isError });
 
   return (
     <div className='space-y-6'>
@@ -28,7 +42,38 @@ function BonAPayersPage() {
           />
         </div>
       </div>
-      <pre className='text-black'>{JSON.stringify(bonAPayers, null, 2)}</pre>
+
+      {isLoading && (
+        <div className='text-center py-8'>
+          <div className='text-lg'>Chargement des registres...</div>
+        </div>
+      )}
+
+      {isError && (
+        <div className='text-center py-8 text-red-600'>
+          <div className='text-lg'>Erreur lors du chargement</div>
+          <div className='text-sm mt-2'>{error?.message}</div>
+        </div>
+      )}
+
+      {bonAPayers && (
+        <div>
+          <div className='mb-4'>
+            <h3 className='text-lg font-semibold'>Données récupérées :</h3>
+            <p>Total: {bonAPayers.metaData?.total || 0} registres</p>
+            <p>
+              Page: {bonAPayers.metaData?.page || 0} /{' '}
+              {Math.ceil(
+                (bonAPayers.metaData?.total || 0) /
+                  (bonAPayers.metaData?.pagination || 10)
+              )}
+            </p>
+          </div>
+          <pre className='text-black text-xs overflow-auto max-h-96 bg-gray-100 p-4 rounded'>
+            {JSON.stringify(bonAPayers, null, 2)}
+          </pre>
+        </div>
+      )}
 
       {/* <Datatable
         data={filteredBonAPayers}

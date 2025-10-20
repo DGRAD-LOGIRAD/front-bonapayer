@@ -1,5 +1,5 @@
 // Script de test pour vérifier la configuration du proxy
-const axios = require('axios');
+import axios from 'axios';
 
 async function testProxy() {
   console.log('🧪 Test de la configuration du proxy Vite...\n');
