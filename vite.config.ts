@@ -20,9 +20,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy pour ms-bp/reg/api/... (bon-à-payer DGRAD) - DOIT être en premier
+      // Proxy pour ms-bp/reg/api/... (bon-à-payer DGRAD) - Règle spécifique
       // Front appelle: /ms-bp/reg/api/v1/bon-a-payer
-      '/ms-bp': {
+      '/ms-bp/reg': {
         target: 'https://api.dgrad.cloud',
         changeOrigin: true,
         secure: true,
