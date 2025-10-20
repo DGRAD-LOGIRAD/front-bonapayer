@@ -64,14 +64,14 @@ export default defineConfig({
           });
         },
       },
-      // Proxy LOGIRAD pour ms-bp/reg/api/... (bon-à-payer LOGIRAD)
+
+      // Proxy pour ms-bp/reg/api/... (bon-à-payer DGRAD)
       // Front appelle: /ms-bp/reg/api/v1/bon-a-payer
       '/ms-bp': {
-        target: 'https://api.logirad.cloud',
+        target: 'https://api.dgrad.cloud',
         changeOrigin: true,
         secure: true,
-        // Chemin identique, pas de réécriture nécessaire
-        rewrite: path => path,
+        // Pas de réécriture nécessaire, le chemin reste identique
         configure: proxy => {
           proxy.on('error', err => {
             console.log('proxy error', err);

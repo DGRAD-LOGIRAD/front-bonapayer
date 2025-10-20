@@ -4,6 +4,14 @@ import { apiService, type CreateBonPayerPayload } from '@/services/api';
 export const bonAPayerKeys = {
   all: ['bon-a-payers'] as const,
   details: (id: number) => [...bonAPayerKeys.all, 'details', id] as const,
+  registres: (
+    pagination: { pageSize: number; page: number },
+    filters: {
+      contribuableNif?: string;
+      contribuableName?: string;
+      reference_bon_a_payer_logirad?: string;
+    }
+  ) => [...bonAPayerKeys.all, 'registres', pagination, filters] as const,
 };
 
 export function useBonAPayer(id: number) {
@@ -69,4 +77,30 @@ export function usePrefetchBonAPayer() {
       staleTime: 5 * 60 * 1000,
     });
   };
+}
+
+export function useBonAPayerRegistres(
+  pagination: { pageSize: number; page: number },
+  filters: {
+    contribuableNif?: string;
+    contribuableName?: string;
+    reference_bon_a_payer_logirad?: string;
+  } = {}
+) {
+  return useQuery({
+    queryKey: bonAPayerKeys.registres(pagination, filters),
+    queryFn: () => apiService.getBonAPayerRegistres(pagination, filters),
+    staleTime: 30 * 1000, // 30 secondes
+    gcTime: 5 * 60 * 1000, // 5 minutes en cache
+    retry: 2,
+    retryDelay: 1000,
+  });
+}
+
+// Hook legacy pour compatibilité
+export function useGetBonPayers(pageSize?: number, page?: number) {
+  return useBonAPayerRegistres(
+    { pageSize: pageSize || 10, page: page || 1 },
+    {}
+  );
 }

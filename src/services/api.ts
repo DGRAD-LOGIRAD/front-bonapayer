@@ -1,4 +1,4 @@
-import axios, { AxiosError, type AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 
 // Configuration pour utiliser le proxy
 const API_BASE_URL = '/api';
@@ -12,57 +12,6 @@ const apiClient = axios.create({
   },
   withCredentials: false,
 });
-
-apiClient.interceptors.request.use(
-  config => {
-    console.log('🚀 API Request:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`,
-      data: config.data,
-      headers: config.headers,
-      environment: import.meta.env.MODE,
-    });
-    return config;
-  },
-  error => {
-    console.error('❌ Request Error:', error);
-    return Promise.reject(error);
-  }
-);
-
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    console.log('✅ API Response:', {
-      status: response.status,
-      statusText: response.statusText,
-      url: response.config.url,
-      data: response.data,
-    });
-    return response;
-  },
-  (error: AxiosError) => {
-    console.error('❌ API Error:', {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      data: error.response?.data,
-    });
-
-    // Transformer l'erreur Axios en format standard
-    const apiError = {
-      status: error.response?.status || 500,
-      message:
-        (error.response?.data as { message?: string })?.message ||
-        error.message,
-      code: error.code,
-    };
-
-    return Promise.reject(apiError);
-  }
-);
 
 export interface CreateBonPayerResponse {
   référenceBonPayer: string;
@@ -208,6 +157,35 @@ export interface CreateBonPayerPayload {
   fkSite: string;
   fkVille: string;
   fkProvince: string;
+}
+
+export interface BonAPayerRegistre {
+  id: number;
+  numero: string;
+  nomContribuable: string;
+  nif: string;
+  montant: number;
+  devise: string;
+  etat: number;
+  createdAt: string;
+  idActe: number;
+  intituleActe: string;
+  idSite: number;
+  intituleSite: string;
+  motifPenalite: string;
+  nomProvince: string;
+  nomVille: string;
+  referenceLogirad: string;
+}
+
+export interface BonAPayerRegistresResponse {
+  code: number;
+  data: BonAPayerRegistre[];
+  metaData: {
+    page: number;
+    pagination: number;
+    total: number;
+  };
 }
 
 export const apiService = {
@@ -365,6 +343,46 @@ export const apiService = {
         }
       }
       throw new Error('Erreur inconnue lors du chargement des sites');
+    }
+  },
+  async getBonAPayerRegistres(
+    pagination: { pageSize: number; page: number },
+    filters: {
+      contribuableNif?: string;
+      contribuableName?: string;
+      reference_bon_a_payer_logirad?: string;
+    }
+  ): Promise<BonAPayerRegistresResponse> {
+    try {
+      const response = await apiClient.post<BonAPayerRegistresResponse>(
+        '/ms-bp/reg/api/v1/bon-a-payer',
+        {
+          pagination,
+          filters: {
+            contribuableNif: filters.contribuableNif || '*',
+            contribuableName: filters.contribuableName || '*',
+            reference_bon_a_payer_logirad:
+              filters.reference_bon_a_payer_logirad || '*',
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<BonAPayerRegistresResponse>;
+        if (axiosError.response) {
+          throw new Error(
+            `Erreur serveur: ${axiosError.response.status} - ${axiosError.message}`
+          );
+        } else if (axiosError.request) {
+          throw new Error(
+            `Erreur réseau: Impossible de joindre le serveur ${API_BASE_URL}. Vérifiez votre connexion et que le serveur est accessible.`
+          );
+        } else {
+          throw new Error(`Erreur de configuration: ${axiosError.message}`);
+        }
+      }
+      throw new Error('Erreur inconnue lors du chargement des registres');
     }
   },
 };

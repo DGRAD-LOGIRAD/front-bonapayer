@@ -1,25 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 
-import Datatable from '@/components/dashboard/datatable';
 import { Input } from '@/components/ui/input';
-import { bonAPayers } from '@/data/bon-a-payers';
+import { useGetBonPayers } from '@/hooks/useBonAPayer';
 
 function BonAPayersPage() {
   const [search, setSearch] = useState('');
-
-  const filteredBonAPayers = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return bonAPayers;
-
-    return bonAPayers.filter(item => {
-      return (
-        item.numero.toLowerCase().includes(term) ||
-        item.assujetti.nom_ou_raison_sociale.toLowerCase().includes(term) ||
-        item.assujetti.NIF.toLowerCase().includes(term)
-      );
-    });
-  }, [search]);
+  const { data: bonAPayers } = useGetBonPayers();
 
   return (
     <div className='space-y-6'>
@@ -41,13 +28,14 @@ function BonAPayersPage() {
           />
         </div>
       </div>
+      <pre className='text-black'>{JSON.stringify(bonAPayers, null, 2)}</pre>
 
-      <Datatable
+      {/* <Datatable
         data={filteredBonAPayers}
         title='Tous les bons à payer'
         description='Liste complète des bons à payer avec possibilité de recherche et consultation détaillée.'
         ctaLabel='Fractionner un bon à payer'
-      />
+      /> */}
     </div>
   );
 }
