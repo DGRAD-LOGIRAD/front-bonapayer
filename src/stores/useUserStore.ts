@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import { getBaseUrl } from '@/components/api/api';
 
 interface Utilisateur {
   id: number;
@@ -26,12 +25,9 @@ export const useUserStore = create<UserStore>(set => ({
   fetchUsers: async () => {
     set({ loading: true });
     try {
-      const res = await axios.get(
-        `${getBaseUrl()}/api-utilisateur/v1/getAllUtilisateur`,
-        {
-          headers: { Authorization: 'Bearer 123' },
-        }
-      );
+      const res = await axios.get(`/api-utilisateur/v1/getAllUtilisateur`, {
+        headers: { Authorization: 'Bearer 123' },
+      });
       const content = Array.isArray(res.data?.content) ? res.data.content : [];
       const utilisateurs = content.map(
         (u: Record<string, unknown>, index: number) => ({

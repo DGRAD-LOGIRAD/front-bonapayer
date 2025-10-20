@@ -9,7 +9,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import ChangePasswordModal from '../modal/ChangePasswordModal';
 import { useAuthStore } from '@/stores/useAuthStore';
 import axios from 'axios';
-import { getBaseUrl } from '../api/api';
 
 export function LoginForm() {
   const [username, setUsername] = useState('');
@@ -29,7 +28,7 @@ export function LoginForm() {
     setErrorFields({});
     setLoading(true);
 
-    const url = `${getBaseUrl()}/api-utilisateur/v1/authentification`;
+    const url = `/api-utilisateur/v1/authentification`;
 
     try {
       const res = await axios.post(

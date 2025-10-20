@@ -21,7 +21,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api.dgrad.cloud/ms_bp',
+        target: 'https://api.dgrad.cloud',
         changeOrigin: true,
         secure: true,
         rewrite: path => path.replace(/^\/api/, '/api'),

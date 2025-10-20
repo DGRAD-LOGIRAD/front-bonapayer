@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import axios from 'axios';
-import { getBaseUrl } from '@/components/api/api';
 
 interface Droit {
   id: number;
@@ -33,12 +32,9 @@ export const useModuleStore = create<ModuleStore>(set => ({
   fetchModules: async () => {
     set({ loading: true });
     try {
-      const res = await axios.get(
-        `${getBaseUrl()}/api-utilisateur/v1/getModule/*`,
-        {
-          headers: { Authorization: 'Bearer 123' }, // mettre le vrai token si nécessaire
-        }
-      );
+      const res = await axios.get(`/api-utilisateur/v1/getModule/*`, {
+        headers: { Authorization: 'Bearer 123' }, // mettre le vrai token si nécessaire
+      });
 
       if (res.data.status !== '200') {
         console.error('Erreur API modules :', res.data.message);

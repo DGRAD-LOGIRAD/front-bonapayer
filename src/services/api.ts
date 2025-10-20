@@ -216,7 +216,7 @@ export const apiService = {
   ): Promise<CreateBonPayerResponse> {
     try {
       const response = await apiClient.post<CreateBonPayerResponse>(
-        '/fractionnerBonPayer',
+        '/ms_bp/api/fractionnerBonPayer',
         payload
       );
       return response.data;
@@ -244,7 +244,7 @@ export const apiService = {
   ): Promise<BonPayerDetailsResponse> {
     try {
       const response = await apiClient.post<BonPayerDetailsResponse>(
-        '/loadBonPayer',
+        '/ms_bp/api/loadBonPayer',
         {
           idBonPayer: `${idBonPayer}`,
         }
