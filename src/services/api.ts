@@ -216,7 +216,7 @@ export const apiService = {
   ): Promise<CreateBonPayerResponse> {
     try {
       const response = await apiClient.post<CreateBonPayerResponse>(
-        '/fractionnerBonPayer',
+        '/ms_bp/fractionnerBonPayer',
         payload
       );
       return response.data;
@@ -244,7 +244,7 @@ export const apiService = {
   ): Promise<BonPayerDetailsResponse> {
     try {
       const response = await apiClient.post<BonPayerDetailsResponse>(
-        '/loadBonPayer',
+        '/ms_bp/loadBonPayer',
         {
           idBonPayer: `${idBonPayer}`,
         }
@@ -271,8 +271,9 @@ export const apiService = {
 
   async getComptesBancaires(): Promise<ComptesBancairesResponse> {
     try {
-      const response =
-        await apiClient.get<ComptesBancairesResponse>('/getCompteBancaire');
+      const response = await apiClient.get<ComptesBancairesResponse>(
+        '/ms_bp/getCompteBancaire'
+      );
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -297,7 +298,8 @@ export const apiService = {
 
   async getProvinces(): Promise<ProvincesResponse> {
     try {
-      const response = await apiClient.get<ProvincesResponse>('/getProvince');
+      const response =
+        await apiClient.get<ProvincesResponse>('/ms_bp/getProvince');
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -320,7 +322,7 @@ export const apiService = {
 
   async getVilles(idProvince: string): Promise<VillesResponse> {
     try {
-      const response = await apiClient.post<VillesResponse>('/getVille', {
+      const response = await apiClient.post<VillesResponse>('/ms_bp/getVille', {
         idProvince: idProvince,
       });
       return response.data;
@@ -345,7 +347,7 @@ export const apiService = {
 
   async getSites(): Promise<SitesResponse> {
     try {
-      const response = await apiClient.get<SitesResponse>('/getSite');
+      const response = await apiClient.get<SitesResponse>('/ms_bp/getSite');
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

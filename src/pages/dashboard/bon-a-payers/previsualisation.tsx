@@ -378,26 +378,33 @@ export default function PrevisualisationPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      <div className='mb-4'>
+      {/* Header responsive */}
+      <div className='mb-2 sm:mb-4 px-4 sm:px-0'>
         <div className='title text-center text-primary font-bold'>
-          <h1 className='text-2xl'>
+          <h1 className='text-lg sm:text-xl md:text-2xl px-2'>
             Visualisation des bons à payer fractionnés
           </h1>
         </div>
       </div>
-      <div className='bg-gray-100 border-b border-gray-200 px-6 py-3'>
-        <div className='flex space-x-4'>
+
+      {/* Navigation des fractions responsive */}
+      <div className='bg-gray-100 border-b border-gray-200 px-2 sm:px-6 py-2 sm:py-3'>
+        <div className='flex flex-wrap gap-2 sm:gap-4 justify-center sm:justify-start'>
           {fractions.map((fraction: BonAPayerData, index: number) => (
             <Button
               key={fraction.id}
               variant={activeTab === `fraction-${index}` ? 'default' : 'ghost'}
               size='sm'
               onClick={() => setActiveTab(`fraction-${index}`)}
-              className={
-                activeTab === `fraction-${index}`
-                  ? 'bg-primary text-white'
-                  : 'text-gray-600'
-              }
+              className={`
+                text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2
+                ${
+                  activeTab === `fraction-${index}`
+                    ? 'bg-primary text-white'
+                    : 'text-gray-600 hover:bg-gray-200'
+                }
+                whitespace-nowrap
+              `}
             >
               Type {fraction.typeBonPayer || 0} :
               {fraction.typeBonPayer === 1 ? '2/3' : '1/3'}
@@ -406,9 +413,10 @@ export default function PrevisualisationPage() {
         </div>
       </div>
 
-      <div className='h-[calc(100vh-60px)]'>
+      {/* PDF Viewer responsive */}
+      <div className='h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-160px)]'>
         <PDFErrorBoundary>
-          <PDFViewer width='100%' height='100%'>
+          <PDFViewer width='100%' height='100%' className='w-full h-full'>
             <BonAPayerOfficielPDF data={currentData} />
           </PDFViewer>
         </PDFErrorBoundary>

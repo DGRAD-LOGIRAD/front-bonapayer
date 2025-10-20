@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from '../ui/button';
-import { getBaseUrl } from '../api/api';
+
 import Loading from '../loading/Loading';
 import { useModalStore } from '@/stores/useModalStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -46,7 +46,7 @@ export default function UserModal() {
     if (showModal && showAgentList) {
       setLoading(true);
       axios
-        .get(`${getBaseUrl()}/api-utilisateur/v1/getListAllAgent`, {
+        .get(`/api-utilisateur/v1/getListAllAgent`, {
           headers: { Authorization: 'Bearer 123' },
         })
         .then(res => setAgents(res.data.content || []))
@@ -72,7 +72,7 @@ export default function UserModal() {
     const data = { login, mail, fkAgent, fkUtilisateurCreat: user?.id };
 
     axios
-      .post(`${getBaseUrl()}/api-utilisateur/v1/saveCompte`, data, {
+      .post(`/api-utilisateur/v1/saveCompte`, data, {
         headers: { Authorization: 'Bearer 123' },
       })
       .then(() => {

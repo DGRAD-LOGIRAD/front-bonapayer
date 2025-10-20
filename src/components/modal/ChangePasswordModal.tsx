@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '../ui/button';
 import axios from 'axios';
-import { getBaseUrl } from '../api/api';
 
 const ChangePasswordModal: React.FC = () => {
   const { showChangePasswordModal, setShowChangePasswordModal, user } =
@@ -39,8 +38,7 @@ const ChangePasswordModal: React.FC = () => {
     setLoading(true);
 
     try {
-      // Assure-toi que getBaseUrl() retourne bien l'URL de base, ex: http://69.62.105.205:8080
-      const url = `${getBaseUrl()}/api-utilisateur/v1/newPassword`;
+      const url = `/api-utilisateur/v1/newPassword`;
 
       const res = await axios.post(
         url,

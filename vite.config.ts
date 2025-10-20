@@ -20,8 +20,76 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // Proxy spécifique pour les endpoints ms_bp du backend DGRAD
+      // Front appelle: /api/ms_bp/...  →  Côté cible: /ms_bp/api/...
+      '/api/ms_bp': {
+        target: 'https://api.dgrad.cloud',
+        changeOrigin: true,
+        secure: true,
+        rewrite: path => path.replace(/^\/api\/ms_bp/, '/ms_bp/api'),
+        configure: proxy => {
+          proxy.on('error', err => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (_, req) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log(
+              'Received Response from the Target:',
+              proxyRes.statusCode,
+              req.url
+            );
+          });
+        },
+      },
+
+      '/api-utilisateur': {
+        target: 'https://api.dgrad.cloud',
+        changeOrigin: true,
+        secure: true,
+        configure: proxy => {
+          proxy.on('error', err => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (_, req) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log(
+              'Received Response from the Target:',
+              proxyRes.statusCode,
+              req.url
+            );
+          });
+        },
+      },
+      // Proxy LOGIRAD pour ms-bp/reg/api/... (bon-à-payer LOGIRAD)
+      // Front appelle: /ms-bp/reg/api/v1/bon-a-payer
+      '/ms-bp': {
+        target: 'https://api.logirad.cloud',
+        changeOrigin: true,
+        secure: true,
+        // Chemin identique, pas de réécriture nécessaire
+        rewrite: path => path,
+        configure: proxy => {
+          proxy.on('error', err => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (_, req) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log(
+              'Received Response from the Target:',
+              proxyRes.statusCode,
+              req.url
+            );
+          });
+        },
+      },
       '/api': {
-        target: 'https://api.dgrad.cloud/ms_bp',
+        target: 'https://api.dgrad.cloud',
         changeOrigin: true,
         secure: true,
         rewrite: path => path.replace(/^\/api/, '/api'),
