@@ -20,6 +20,30 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // Proxy pour ms-bp/reg/api/... (bon-à-payer DGRAD) - DOIT être en premier
+      // Front appelle: /ms-bp/reg/api/v1/bon-a-payer
+      '/ms-bp': {
+        target: 'https://api.dgrad.cloud',
+        changeOrigin: true,
+        secure: true,
+        // Pas de réécriture nécessaire, le chemin reste identique
+        configure: proxy => {
+          proxy.on('error', err => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (_, req) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log(
+              'Received Response from the Target:',
+              proxyRes.statusCode,
+              req.url
+            );
+          });
+        },
+      },
+
       // Proxy spécifique pour les endpoints ms_bp du backend DGRAD
       // Front appelle: /api/ms_bp/...  →  Côté cible: /ms_bp/api/...
       '/api/ms_bp': {
@@ -65,29 +89,7 @@ export default defineConfig({
         },
       },
 
-      // Proxy pour ms-bp/reg/api/... (bon-à-payer DGRAD)
-      // Front appelle: /ms-bp/reg/api/v1/bon-a-payer
-      '/ms-bp': {
-        target: 'https://api.dgrad.cloud',
-        changeOrigin: true,
-        secure: true,
-        // Pas de réécriture nécessaire, le chemin reste identique
-        configure: proxy => {
-          proxy.on('error', err => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (_, req) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(
-              'Received Response from the Target:',
-              proxyRes.statusCode,
-              req.url
-            );
-          });
-        },
-      },
+      // Règle générale /api en dernier pour éviter les conflits
       '/api': {
         target: 'https://api.dgrad.cloud',
         changeOrigin: true,
