@@ -57,13 +57,12 @@ function BonAPayerDetailsPage() {
   }
 
   const formatCurrency = (amount: number) => {
-    const currency = data.fkDevise || 'USD'; // Valeur par défaut si fkDevise est undefined
+    const currency = data.fkDevise || 'USD';
     const formattedAmount = new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(amount);
 
-    // Mapper les devises vers les codes appropriés
     const currencyMap: { [key: string]: string } = {
       USD: 'USD',
       CDF: 'CDF',
@@ -98,11 +97,9 @@ function BonAPayerDetailsPage() {
               <div className='h-4 w-px bg-gray-300 hidden sm:block' />
               <div className='min-w-0 flex-1'>
                 <h1 className='text-lg sm:text-xl md:text-2xl font-semibold text-primary truncate'>
-                  Bon à payer Nº {data.numero}
+                  Bon à payer Nº {data.refernceLogirad}
                 </h1>
-                <p className='text-xs sm:text-sm text-gray-500 font-mono truncate'>
-                  {data.refernceBnp}
-                </p>
+
               </div>
             </div>
             <Button
@@ -122,12 +119,12 @@ function BonAPayerDetailsPage() {
         <div className='space-y-4 sm:space-y-6'>
           <div className='border border-gray-200 rounded-lg p-4 sm:p-6 md:p-8'>
             <h3 className='text-sm sm:text-base font-bold text-primary uppercase tracking-wide mb-4 sm:mb-6'>
-              Bon principal
+              Bon à payer principal (60 % des pénalités)
             </h3>
 
             <div className='text-center mb-6 sm:mb-8'>
               <h4 className='text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide mb-2 sm:mb-3'>
-                Montant à payer
+                Montant total à payer
               </h4>
               <p className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary text-balance break-words px-2'>
                 {formatCurrency(data.montant)}
@@ -245,18 +242,18 @@ function BonAPayerDetailsPage() {
                 {data.detailsBonPayerList.map(
                   (detail: unknown, index: number) => (
                     <div
-                      key={(detail as { id: number }).id}
+                      key={index}
                       className='border border-gray-200 rounded-lg p-3 sm:p-4'
                     >
                       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2'>
                         <h4 className='text-sm font-bold text-gray-900'>
-                          Fraction #{index + 1}
+                          BON À PAYER  #{(detail as { typeBonPayer: number }).typeBonPayer === 1 ? 'A' : 'B'}
                         </h4>
                         <span className='text-xs bg-gray-100 px-2 py-1 rounded font-mono self-start sm:self-auto'>
                           Type{' '}
-                          {(detail as { typeBonPayer: number }).typeBonPayer} :
+                          {(detail as { typeBonPayer: number }).typeBonPayer === 1 ? 'A' : 'B'} :
                           {(detail as { typeBonPayer: number }).typeBonPayer ===
-                          1
+                            1
                             ? '2/3'
                             : '1/3'}
                         </span>
@@ -293,7 +290,7 @@ function BonAPayerDetailsPage() {
                             Référence
                           </p>
                           <p className='text-xs font-mono text-gray-600 break-all'>
-                            {(detail as { refernceBnp: string }).refernceBnp}
+                            {(detail as { refernceBonMere: string }).refernceBonMere}
                           </p>
                         </div>
                       </div>

@@ -11,7 +11,6 @@ export function ForgotPasswordForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Forgot password attempt:', { email });
   };
 
   return (

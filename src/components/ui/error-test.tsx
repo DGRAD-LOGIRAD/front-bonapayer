@@ -34,7 +34,7 @@ export function ErrorTest() {
   };
 
   if (import.meta.env.PROD) {
-    return null; // Ne pas afficher en production
+    return null;
   }
 
   return (

@@ -34,6 +34,9 @@ const BonAPayersPage = lazy(
 const CreerBonAPayerPage = lazy(
   () => import('./pages/dashboard/bon-a-payers/creer.tsx')
 );
+const FractionnementBonAPayerPage = lazy(
+  () => import('./pages/dashboard/bon-a-payers/fractionnement.tsx')
+);
 const BonAPayerDetailsPage = lazy(
   () => import('./pages/dashboard/bon-a-payers/details.tsx')
 );
@@ -109,6 +112,16 @@ const router = createBrowserRouter(
               <ErrorBoundary>
                 <SuspenseWrapper loadingText='Chargement du formulaire...'>
                   <CreerBonAPayerPage />
+                </SuspenseWrapper>
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path='fractionnement'
+            element={
+              <ErrorBoundary>
+                <SuspenseWrapper loadingText='Chargement du formulaire...'>
+                  <FractionnementBonAPayerPage />
                 </SuspenseWrapper>
               </ErrorBoundary>
             }

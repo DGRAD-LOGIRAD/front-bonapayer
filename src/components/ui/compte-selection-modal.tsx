@@ -74,7 +74,6 @@ export function CompteSelectionModal({
         </DialogHeader>
 
         <div className='space-y-4'>
-          {/* Filtres */}
           <div className='flex gap-3'>
             <div className='flex-1'>
               <Input
@@ -114,7 +113,6 @@ export function CompteSelectionModal({
             </div>
           </div>
 
-          {/* Liste des comptes */}
           <div className='max-h-96 overflow-y-auto'>
             <div className='grid gap-2'>
               {filteredComptes.map(compte => (

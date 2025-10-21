@@ -19,7 +19,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Loading from '../loading/Loading';
-//import { useModalStore } from '@/stores/useModalStore';
 import { useModuleStore } from '@/stores/useModulStore';
 import { useFilterStore } from '@/stores/FilterStore';
 
@@ -46,7 +45,6 @@ export default function DatatableModul() {
 
   const { modules, fetchModules } = useModuleStore();
   const { search, etatFilter, setSearch, setEtatFilter } = useFilterStore();
-  // const setShowModal = useModalStore(state => state.setShowModuleModal);
 
   useEffect(() => {
     const load = async () => {
@@ -138,7 +136,6 @@ export default function DatatableModul() {
               size='sm'
               variant='outline'
               className='text-blue-600 hover:bg-blue-50 bg-transparent'
-              /*   onClick={() => setShowModal(true)} */
             >
               <Edit className='h-4 w-4' />
             </Button>

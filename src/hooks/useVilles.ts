@@ -9,9 +9,9 @@ export function useVilles(idProvince: string | null) {
       const response = await apiService.getVilles(idProvince);
       return response.data;
     },
-    enabled: !!idProvince, // Ne s'exécute que si idProvince est fourni
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled: !!idProvince,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
   });

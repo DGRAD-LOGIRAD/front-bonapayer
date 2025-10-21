@@ -1,11 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { useBonAPayerRegistres } from '@/hooks/useBonAPayer';
+import { useDebounce } from '@/hooks/use-debounce';
+import Datatable from '@/components/dashboard/datatable';
+import TableSkeleton from '@/components/dashboard/table-skeleton';
+import type { BonAPayerSummary } from '@/components/dashboard/datatable';
+
+
 
 function BonAPayersPage() {
   const [search, setSearch] = useState('');
+  const [filteredData, setFilteredData] = useState<BonAPayerSummary[]>([]);
+
+  const debouncedSearch = useDebounce(search, 300);
+
   const {
     data: bonAPayers,
     isLoading,
@@ -20,7 +30,41 @@ function BonAPayersPage() {
     }
   );
 
-  console.log('Hook state:', { bonAPayers, isLoading, error, isError });
+
+
+
+
+  useEffect(() => {
+    if (!debouncedSearch.trim()) {
+      setFilteredData(bonAPayers);
+      return;
+    }
+
+    const searchLower = debouncedSearch.toLowerCase().trim();
+    const filtered = bonAPayers.filter((item: any) => {
+      const searchableFields = [
+        item.numero,
+        item.assujetti.NIF,
+        item.assujetti.nom_ou_raison_sociale,
+        item.motif,
+        item.centre.nom,
+        item.centre.ville.nom,
+        item.centre.ville.province.nom,
+      ];
+
+      return searchableFields.some(field =>
+        field.toLowerCase().includes(searchLower)
+      );
+    });
+
+    setFilteredData(filtered);
+  }, [debouncedSearch, bonAPayers]);
+
+  useEffect(() => {
+    if (bonAPayers?.length > 0 && filteredData?.length === 0) {
+      setFilteredData(bonAPayers);
+    }
+  }, [bonAPayers, filteredData]);
 
   return (
     <div className='space-y-6'>
@@ -36,18 +80,14 @@ function BonAPayersPage() {
           <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
           <Input
             value={search}
-            onChange={event => setSearch(event.target.value)}
-            placeholder='Rechercher par numéro ou NIF'
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder='Rechercher par numéro, NIF, nom, motif...'
             className='pl-9'
           />
         </div>
       </div>
 
-      {isLoading && (
-        <div className='text-center py-8'>
-          <div className='text-lg'>Chargement des registres...</div>
-        </div>
-      )}
+      {isLoading && <TableSkeleton />}
 
       {isError && (
         <div className='text-center py-8 text-red-600'>
@@ -56,31 +96,27 @@ function BonAPayersPage() {
         </div>
       )}
 
-      {bonAPayers && (
-        <div>
+      {!isLoading && !isError && bonAPayers && (
+        <>
           <div className='mb-4'>
-            <h3 className='text-lg font-semibold'>Données récupérées :</h3>
-            <p>Total: {bonAPayers.metaData?.total || 0} registres</p>
-            <p>
-              Page: {bonAPayers.metaData?.page || 0} /{' '}
-              {Math.ceil(
-                (bonAPayers.metaData?.total || 0) /
-                  (bonAPayers.metaData?.pagination || 10)
-              )}
-            </p>
-          </div>
-          <pre className='text-black text-xs overflow-auto max-h-96 bg-gray-100 p-4 rounded'>
-            {JSON.stringify(bonAPayers, null, 2)}
-          </pre>
-        </div>
-      )}
+            <div className='flex items-center justify-between'>
 
-      {/* <Datatable
-        data={filteredBonAPayers}
-        title='Tous les bons à payer'
-        description='Liste complète des bons à payer avec possibilité de recherche et consultation détaillée.'
-        ctaLabel='Fractionner un bon à payer'
-      /> */}
+              {search && (
+                <div className='text-sm text-muted-foreground'>
+                  {filteredData?.length} résultat(s) trouvé(s) sur {bonAPayers?.length}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Datatable
+            data={bonAPayers}
+            title='Tous les bons à payer'
+            description='Liste complète des bons à payer avec possibilité de recherche et consultation détaillée.'
+            ctaLabel='Fractionner un bon à payer'
+          />
+        </>
+      )}
     </div>
   );
 }

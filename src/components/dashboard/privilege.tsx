@@ -40,20 +40,9 @@ export default function Privilege() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
-  //const { users, fetchUsers } = useUserStore()
   const { users, fetchUsers } = useUserStore();
   const { search, etatFilter, setSearch, setEtatFilter } = useFilterStore();
   const setShowModal = useModalStore(state => state.setShowUserModal);
-
-  // Charger les utilisateurs au montage
-  /*  useEffect(() => {
-    const loadUsers = async () => {
-      setLoading(true)
-      await fetchUsers()
-      setLoading(false)
-    }
-    loadUsers()
-  }, [fetchUsers]) */
 
   useEffect(() => {
     const load = async () => {
@@ -64,12 +53,10 @@ export default function Privilege() {
     load();
   }, [fetchUsers]);
 
-  // Reset page quand filtre change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, etatFilter]);
 
-  // Filtrage sécurisé
   const filteredData = useMemo(() => {
     if (!users || users.length === 0) return [];
 
@@ -93,14 +80,12 @@ export default function Privilege() {
     });
   }, [users, search, etatFilter]);
 
-  // Pagination
   const lastPage = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(start, start + itemsPerPage);
   }, [filteredData, currentPage]);
 
-  // Colonnes du tableau
   const columns = useMemo(
     () => [
       columnHelper.accessor('id', {
@@ -207,7 +192,6 @@ export default function Privilege() {
         </Button>
       </div>
 
-      {/* Filtres */}
       <div className='flex flex-col md:flex-row gap-4 mb-4 items-start md:items-center'>
         <input
           type='text'
@@ -228,7 +212,6 @@ export default function Privilege() {
         </select>
       </div>
 
-      {/* Table ou Loading */}
       {loading ? (
         <Loading />
       ) : (
@@ -282,7 +265,6 @@ export default function Privilege() {
         </div>
       )}
 
-      {/* Pagination */}
       <div className='flex justify-center mt-6 gap-2 flex-wrap'>
         <button
           onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
@@ -313,7 +295,6 @@ export default function Privilege() {
         </button>
       </div>
 
-      {/* Modal Utilisateur */}
       <UserModal />
     </div>
   );

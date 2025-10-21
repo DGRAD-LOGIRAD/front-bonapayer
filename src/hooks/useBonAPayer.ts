@@ -19,11 +19,11 @@ export function useBonAPayer(id: number) {
     queryKey: bonAPayerKeys.details(id),
     queryFn: async () => {
       const response = await apiService.getBonPayerDetails(id);
-      return response.data; // L'API retourne déjà { data: {...}, message: 'success', status: '200' }
+      return response.data;
     },
     enabled: !!id && id > 0,
-    staleTime: 30 * 1000, // 30 secondes - données fraîches plus souvent
-    gcTime: 5 * 60 * 1000, // 5 minutes en cache
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
   });
@@ -36,23 +36,18 @@ export function useCreateBonAPayer() {
     mutationFn: (payload: CreateBonPayerPayload) =>
       apiService.createBonPayer(payload),
     onSuccess: data => {
-      // Invalider toutes les requêtes liées aux bons à payer
       queryClient.invalidateQueries({
         queryKey: bonAPayerKeys.all,
       });
 
-      // Précharger les données du bon à payer créé
       queryClient.prefetchQuery({
         queryKey: bonAPayerKeys.details(data.idBonPayer),
         queryFn: async () => {
           const response = await apiService.getBonPayerDetails(data.idBonPayer);
           return response.data;
         },
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 5 * 60 * 1000,
       });
-    },
-    onError: error => {
-      console.error('Erreur lors de la création du bon à payer:', error);
     },
   });
 }
@@ -90,17 +85,83 @@ export function useBonAPayerRegistres(
   return useQuery({
     queryKey: bonAPayerKeys.registres(pagination, filters),
     queryFn: () => apiService.getBonAPayerRegistres(pagination, filters),
-    staleTime: 30 * 1000, // 30 secondes
-    gcTime: 5 * 60 * 1000, // 5 minutes en cache
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
   });
 }
 
-// Hook legacy pour compatibilité
+export function useDashboardStats() {
+  return useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: async () => {
+      const response = await apiService.getBonAPayerRegistres(
+        { pageSize: 100, page: 1 },
+        {}
+      );
+
+      const data = response || [];
+
+      const bonAPayerNonFractionne =
+        data?.filter((item: { etat: number }) => item.etat !== 1)?.length || 0;
+      const bonAPayeFractionne =
+        data?.filter((item: { etat: number }) => item.etat === 1)?.length || 0;
+
+      let totalUSD = 0;
+      let totalCDF = 0;
+
+      data?.forEach((item: { montant: number; devise: string }) => {
+        const montant = Number(item.montant) || 0;
+        if (item.devise === 'USD') {
+          totalUSD += montant;
+        } else if (item.devise === 'CDF') {
+          totalCDF += montant;
+        }
+      });
+
+      return {
+        bonAPayerNonFractionne,
+        bonAPayeFractionne,
+        totalUSD,
+        totalCDF,
+      };
+    },
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: 1000,
+  });
+}
+
+export function useBonAPayerFractionnes() {
+  return useQuery({
+    queryKey: ['bon-a-payers-fractionnes'],
+    queryFn: async () => {
+      const response = await apiService.getBonAPayerRegistres(
+        { pageSize: 100, page: 1 },
+        {}
+      );
+
+      return response || [];
+    },
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 2,
+    retryDelay: 1000,
+  });
+}
+
 export function useGetBonPayers(pageSize?: number, page?: number) {
   return useBonAPayerRegistres(
     { pageSize: pageSize || 10, page: page || 1 },
     {}
   );
+}
+
+export function useSearchBonAPayer() {
+  return useMutation({
+    mutationFn: (codeBonPayer: string) =>
+      apiService.getBonPayerByCode(codeBonPayer),
+  });
 }

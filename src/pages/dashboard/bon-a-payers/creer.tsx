@@ -30,14 +30,15 @@ import {
 } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { X, Search, RefreshCw } from 'lucide-react';
 import { users } from '@/data/user';
 import {
   type CreateBonPayerPayload,
   type CompteBancaire,
+  type BonPayerSearchData,
 } from '@/services/api';
 import { ErrorDebug } from '@/components/ui/error-debug';
-import { useCreateBonAPayer } from '@/hooks/useBonAPayer';
+import { useCreateBonAPayer, useSearchBonAPayer } from '@/hooks/useBonAPayer';
 import { useComptesBancaires } from '@/hooks/useComptesBancaires';
 import { useProvinces } from '@/hooks/useProvinces';
 import { useVilles } from '@/hooks/useVilles';
@@ -86,21 +87,21 @@ const defaultValues: BonAPayerFormValues = {
   fkActe: '',
   fkDevise: 'USD',
   fkNotePerception: '',
-  fkSite: '37783', // Centre 1 par défaut
+  fkSite: '37783',
   fkVille: '',
   fkProvince: '',
 };
 
-// Valeur fixe pour le compte principal
+
 const COMPTE_PRINCIPAL_FIXE = '00011-00101-000001291036-41';
 
-function CreerBonAPayerPage() {
+function CreeBonAPayerPage() {
   const navigate = useNavigate();
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedVille, setSelectedVille] = useState<string>('');
-  const [selectedSite, setSelectedSite] = useState<string>('37783'); // Centre 1 par défaut
+  const [selectedSite, setSelectedSite] = useState<string>('37783');
 
-  // États pour les comptes bancaires
+
   const [selectedCompteA, setSelectedCompteA] = useState<CompteBancaire | null>(
     null
   );
@@ -109,45 +110,43 @@ function CreerBonAPayerPage() {
   );
   const [selectedDevise, setSelectedDevise] = useState<string>('');
 
-  // États pour les modals
+
   const [isCompteAModalOpen, setIsCompteAModalOpen] = useState(false);
   const [isCompteBModalOpen, setIsCompteBModalOpen] = useState(false);
 
+  const [searchCode, setSearchCode] = useState<string>('');
+  const [foundBonPayer, setFoundBonPayer] = useState<BonPayerSearchData | null>(null);
+  const [isFormPrefilled, setIsFormPrefilled] = useState<boolean>(false);
+
   const createBonAPayerMutation = useCreateBonAPayer();
+  const searchBonAPayerMutation = useSearchBonAPayer();
   const comptesBancairesQuery = useComptesBancaires();
   const provincesQuery = useProvinces();
   const villesQuery = useVilles(selectedProvince);
-  const sitesQuery = useSites();
+  const sitesQuery = useSites(selectedVille.toString());
 
-  // Filtrer les sites avec Centre 1 toujours disponible
+
   const getFilteredSites = () => {
-    // Toujours inclure Centre 1 par défaut
-    const defaultSites = [
-      { id: 37783, intitule: 'Centre 1', idVille: 0 }, // Site par défaut
-    ];
 
-    let sitesList = [...defaultSites];
 
-    // Ajouter les sites de l'API si disponibles
-    if (sitesQuery.data) {
-      let apiSites = sitesQuery.data;
 
-      // Filtrer par ville si une ville est sélectionnée
-      if (selectedVille) {
-        apiSites = apiSites.filter(
-          site => site.idVille.toString() === selectedVille
-        );
-      }
-
-      // Ajouter les sites de l'API (en excluant Centre 1 s'il existe déjà)
-      const filteredApiSites = apiSites.filter(
-        site => !site.intitule.toLowerCase().includes('centre 1')
-      );
-      sitesList = [...defaultSites, ...filteredApiSites];
+    if (!sitesQuery.data || sitesQuery.data.length === 0) {
+      return [];
     }
 
-    // Trier par nom
-    return sitesList.sort((a, b) => a.intitule.localeCompare(b.intitule));
+
+    let apiSites = sitesQuery.data;
+
+
+    const filteredApiSites = apiSites.filter(
+      site => !site.intitule.toLowerCase().includes('centre 1')
+    );
+
+
+    const allSites = [...filteredApiSites];
+
+
+    return allSites.sort((a, b) => a.intitule.localeCompare(b.intitule));
   };
 
   const form = useForm<BonAPayerFormValues>({
@@ -161,20 +160,31 @@ function CreerBonAPayerPage() {
     setSelectedSite(defaultValues.fkSite);
   }, []);
 
+
+  React.useEffect(() => {
+    if (sitesQuery.data && selectedSite) {
+      const availableSites = getFilteredSites();
+      const isCurrentSiteValid = availableSites.some(site => site.id.toString() === selectedSite);
+
+      if (!isCurrentSiteValid) {
+
+        setSelectedSite('37783');
+        form.setValue('fkSite', '37783');
+      }
+    }
+  }, [sitesQuery.data, selectedVille, selectedSite, form]);
+
   const handleProvinceChange = (provinceId: string) => {
     setSelectedProvince(provinceId);
     setSelectedVille('');
-    setSelectedSite('37783'); // Toujours Centre 1 par défaut
+
     form.setValue('fkProvince', provinceId);
     form.setValue('fkVille', '');
-    form.setValue('fkSite', '37783');
   };
 
   const handleVilleChange = (villeId: string) => {
     setSelectedVille(villeId);
-    setSelectedSite('37783'); // Toujours Centre 1 par défaut
     form.setValue('fkVille', villeId);
-    form.setValue('fkSite', '37783');
   };
 
   const handleSiteChange = (siteId: string) => {
@@ -182,22 +192,19 @@ function CreerBonAPayerPage() {
     form.setValue('fkSite', siteId);
   };
 
-  // Fonction pour réinitialiser la sélection
   const resetCompteSelection = () => {
     setSelectedCompteA(null);
     setSelectedCompteB(null);
     setSelectedDevise('');
     form.setValue('fkCompteA', '');
     form.setValue('fkCompteB', '');
-    form.setValue('fkDevise', 'USD'); // Valeur par défaut
+    form.setValue('fkDevise', 'USD');
   };
 
-  // Fonctions pour désélectionner individuellement
   const handleCompteADeselect = () => {
     setSelectedCompteA(null);
     form.setValue('fkCompteA', '');
 
-    // Si c'était le seul compte sélectionné, réinitialiser la devise
     if (!selectedCompteB) {
       setSelectedDevise('');
       form.setValue('fkDevise', 'USD');
@@ -208,25 +215,21 @@ function CreerBonAPayerPage() {
     setSelectedCompteB(null);
     form.setValue('fkCompteB', '');
 
-    // Si c'était le seul compte sélectionné, réinitialiser la devise
     if (!selectedCompteA) {
       setSelectedDevise('');
       form.setValue('fkDevise', 'USD');
     }
   };
 
-  // Fonctions de gestion des comptes bancaires
   const handleCompteASelect = (compte: CompteBancaire) => {
     setSelectedCompteA(compte);
     form.setValue('fkCompteA', compte.id);
 
-    // Si c'est le premier compte sélectionné, définir la devise
     if (!selectedDevise) {
       setSelectedDevise(compte.devise);
       form.setValue('fkDevise', compte.devise as 'USD' | 'CDF');
     }
 
-    // Si la devise change, réinitialiser l'autre compte
     if (selectedDevise && selectedDevise !== compte.devise) {
       setSelectedCompteB(null);
       form.setValue('fkCompteB', '');
@@ -237,26 +240,22 @@ function CreerBonAPayerPage() {
     setSelectedCompteB(compte);
     form.setValue('fkCompteB', compte.id);
 
-    // Si c'est le premier compte sélectionné, définir la devise
     if (!selectedDevise) {
       setSelectedDevise(compte.devise);
       form.setValue('fkDevise', compte.devise as 'USD' | 'CDF');
     }
 
-    // Si la devise change, réinitialiser l'autre compte
     if (selectedDevise && selectedDevise !== compte.devise) {
       setSelectedCompteA(null);
       form.setValue('fkCompteA', '');
     }
   };
 
-  // Filtrer les comptes selon la devise sélectionnée
   const getFilteredComptes = () => {
     if (!comptesBancairesQuery.data) return [];
 
     let comptes = comptesBancairesQuery.data;
 
-    // Si une devise est déjà sélectionnée, filtrer par cette devise
     if (selectedDevise) {
       comptes = comptes.filter(compte => compte.devise === selectedDevise);
     }
@@ -264,11 +263,86 @@ function CreerBonAPayerPage() {
     return comptes;
   };
 
+  const handleSearch = () => {
+    if (!searchCode.trim()) {
+      toast.error('Veuillez saisir un code de bon à payer');
+      return;
+    }
+
+    searchBonAPayerMutation.mutate(searchCode.trim(), {
+      onSuccess: response => {
+        if (response.status === '200' && response.data) {
+          setFoundBonPayer(response.data);
+          prefillFormWithSearchData(response.data);
+          toast.success('Bon à payer trouvé et formulaire pré-rempli');
+        } else {
+          toast.error('Il n\'existe pas de bon à payer pour ce numéro');
+        }
+      },
+      onError: error => {
+        if (error.message && error.message.includes('404')) {
+          toast.error('Il n\'existe pas de bon à payer pour ce numéro');
+        } else if (error.message && error.message.includes('non trouvé')) {
+          toast.error('Il n\'existe pas de bon à payer pour ce numéro');
+        } else {
+          toast.error('Erreur lors de la recherche du bon à payer');
+        }
+      },
+    });
+  };
+
+  const handleResetSearch = () => {
+    setSearchCode('');
+    setFoundBonPayer(null);
+    setIsFormPrefilled(false);
+    form.reset(defaultValues);
+    resetCompteSelection();
+    setSelectedProvince('');
+    setSelectedVille('');
+    setSelectedSite('37783');
+  };
+
+  const prefillFormWithSearchData = (data: BonPayerSearchData) => {
+    const convertDateFormat = (dateString: string): string => {
+      try {
+        const [datePart] = dateString.split(' ');
+        const [day, month, year] = datePart.split('/');
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      } catch (error) {
+        return '';
+      }
+    };
+
+    const parsedData = {
+      numero: data.numero || '',
+      montant: data.montant ? data.montant.toString() : '',
+      dateEcheance: data.dateEcheance ? convertDateFormat(data.dateEcheance) : '',
+      motifPenalite: data.motif_penalite || '',
+      refenceLogirad: data.id || '',
+      fkActe: data.fkActe.toString() || '',
+      fkDevise: data.fkDevise.toString() as 'USD' | 'CDF',
+      fkNotePerception: data.fkNotePerception.toString() || '',
+      fkCompte: data.fkCompte.toString() || '',
+    };
+
+    Object.entries(parsedData).forEach(([key, value]) => {
+      if (value) {
+        form.setValue(key as keyof BonAPayerFormValues, value);
+      }
+    });
+
+    if (parsedData.fkDevise) {
+      setSelectedDevise(parsedData.fkDevise);
+    }
+
+    setIsFormPrefilled(true);
+  };
+
   const onSubmit = async (values: BonAPayerFormValues) => {
     const formattedMontant = Number(values.montant).toFixed(4);
     const preparedPayload: CreateBonPayerPayload = {
       ...values,
-      fkCompte: COMPTE_PRINCIPAL_FIXE, // Valeur fixe pour le compte principal
+      fkCompte: COMPTE_PRINCIPAL_FIXE,
       montant: formattedMontant,
       dateEcheance: format(new Date(values.dateEcheance), 'yyyy-MM-dd'),
     };
@@ -284,7 +358,6 @@ function CreerBonAPayerPage() {
         }
       },
       onError: error => {
-        console.error('Erreur lors de la création du bon à payer:', error);
         toast.error('Erreur lors de la création du bon à payer');
       },
     });
@@ -294,12 +367,102 @@ function CreerBonAPayerPage() {
     <div className=' '>
       <Card className='max-w-5xl mx-auto'>
         <CardHeader>
-          <CardTitle>Enregistrer un bon à payer</CardTitle>
+          <CardTitle>Fractionner un bon à payer</CardTitle>
           <CardDescription>
-            Renseignez autant de détails que possible pour préparer la requête.
+            Renseignez le code du bon à payer pour le fractionner.
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <section className='space-y-4 mb-8'>
+            <h3 className='text-lg font-semibold text-primary'>
+              Rechercher un bon à payer
+            </h3>
+            <div className='flex gap-4 items-end'>
+              <Field className='flex-1'>
+                <FieldLabel htmlFor='searchCode'>
+                  Code du bon à payer
+                </FieldLabel>
+                <FieldContent>
+                  <Input
+                    id='searchCode'
+                    value={searchCode}
+                    onChange={(e) => setSearchCode(e.target.value)}
+                    placeholder='Ex: BF25AA00581'
+                    disabled={searchBonAPayerMutation.isPending}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearch();
+                      }
+                    }}
+                  />
+                </FieldContent>
+              </Field>
+              <Button
+                type='button'
+                onClick={handleSearch}
+                disabled={searchBonAPayerMutation.isPending || !searchCode.trim()}
+                className='mb-0'
+              >
+                {searchBonAPayerMutation.isPending ? (
+                  <RefreshCw className='h-4 w-4 animate-spin mr-2' />
+                ) : (
+                  <Search className='h-4 w-4 mr-2' />
+                )}
+                {searchBonAPayerMutation.isPending ? 'Recherche...' : 'Rechercher'}
+              </Button>
+              {foundBonPayer && (
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleResetSearch}
+                  className='mb-0'
+                >
+                  <RefreshCw className='h-4 w-4 mr-2' />
+                  Réinitialiser
+                </Button>
+              )}
+            </div>
+
+            {foundBonPayer && (
+              <Card className='bg-green-50 border-green-200'>
+                <CardHeader className='pb-3'>
+                  <CardTitle className='text-green-800 text-base'>
+                    Bon à payer trouvé
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='pt-0'>
+                  <div className='grid gap-2 text-sm'>
+                    <div className='flex justify-between'>
+                      <span className='font-medium'>Numéro:</span>
+                      <span>{foundBonPayer.numero}</span>
+                    </div>
+                    <div className='flex justify-between'>
+                      <span className='font-medium'>Montant:</span>
+                      <span>{foundBonPayer.montant.toLocaleString()} {foundBonPayer.fkDevise}</span>
+                    </div>
+                    <div className='flex justify-between'>
+                      <span className='font-medium'>Date d'échéance:</span>
+                      <span>{foundBonPayer.dateEcheance.split(' ')[0]}</span>
+                    </div>
+                    <div className='flex justify-between'>
+                      <span className='font-medium'>Motif:</span>
+                      <span className='text-right max-w-xs truncate'>{foundBonPayer.motif_penalite}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {searchBonAPayerMutation.error && (
+              <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+                <div className='text-red-600 text-sm'>
+                  {searchBonAPayerMutation.error.message}
+                </div>
+              </div>
+            )}
+          </section>
+
           {createBonAPayerMutation.error && (
             <div className='mb-6'>
               <ErrorDebug
@@ -317,7 +480,12 @@ function CreerBonAPayerPage() {
                 <Field>
                   <FieldLabel htmlFor='numero'>Numéro</FieldLabel>
                   <FieldContent>
-                    <Input id='numero' {...form.register('numero')} />
+                    <Input
+                      id='numero'
+                      {...form.register('numero')}
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
+                    />
                     <FieldError
                       errors={
                         form.formState.errors.numero && [
@@ -336,6 +504,8 @@ function CreerBonAPayerPage() {
                       id='dateEcheance'
                       type='date'
                       {...form.register('dateEcheance')}
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
                     />
                     <FieldError
                       errors={
@@ -534,6 +704,8 @@ function CreerBonAPayerPage() {
                       {...form.register('montant')}
                       type='number'
                       step='0.0001'
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
                     />
                     <FieldError
                       errors={
@@ -548,10 +720,10 @@ function CreerBonAPayerPage() {
                   <FieldLabel>Devise</FieldLabel>
                   <FieldContent>
                     {selectedDevise ? (
-                      <div className='flex items-center gap-2 p-3 border rounded-md bg-gray-50'>
+                      <div className={`flex items-center gap-2 p-3 border rounded-md ${isFormPrefilled ? 'bg-gray-100' : 'bg-gray-50'}`}>
                         <Badge variant='outline'>{selectedDevise}</Badge>
                         <span className='text-sm text-gray-600'>
-                          (Figée par le premier compte sélectionné)
+                          {isFormPrefilled ? '(Pré-rempli par la recherche)' : '(Figée par le premier compte sélectionné)'}
                         </span>
                       </div>
                     ) : (
@@ -575,7 +747,12 @@ function CreerBonAPayerPage() {
                     Code de l'acte générateur
                   </FieldLabel>
                   <FieldContent>
-                    <Input id='fkActe' {...form.register('fkActe')} />
+                    <Input
+                      id='fkActe'
+                      {...form.register('fkActe')}
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
+                    />
                     <FieldError
                       errors={
                         form.formState.errors.fkActe && [
@@ -594,6 +771,8 @@ function CreerBonAPayerPage() {
                       id='motifPenalite'
                       rows={3}
                       {...form.register('motifPenalite')}
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
                     />
                     <FieldError
                       errors={
@@ -644,6 +823,8 @@ function CreerBonAPayerPage() {
                     <Input
                       id='fkNotePerception'
                       {...form.register('fkNotePerception')}
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
                     />
                     <FieldError
                       errors={
@@ -683,6 +864,8 @@ function CreerBonAPayerPage() {
                     <Input
                       id='refenceLogirad'
                       {...form.register('refenceLogirad')}
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
                     />
                     <FieldError
                       errors={
@@ -856,18 +1039,19 @@ function CreerBonAPayerPage() {
               </Button>
               <Button
                 type='submit'
-                disabled={createBonAPayerMutation.isPending}
+                disabled={createBonAPayerMutation.isPending || !foundBonPayer}
               >
                 {createBonAPayerMutation.isPending
                   ? 'Fractionnement en cours...'
-                  : 'Fractionner un bon à payer'}
+                  : foundBonPayer
+                    ? `Fractionner le bon ${foundBonPayer.id}`
+                    : 'Recherchez d\'abord un bon à payer'}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
 
-      {/* Modals de sélection des comptes */}
       {comptesBancairesQuery.data && (
         <>
           <CompteSelectionModal
@@ -888,42 +1072,41 @@ function CreerBonAPayerPage() {
         </>
       )}
 
-      {/* Affichage des erreurs de chargement */}
       {(comptesBancairesQuery.error ||
         provincesQuery.error ||
         villesQuery.error) && (
-        <div className='fixed bottom-4 right-4 z-50 space-y-2'>
-          {comptesBancairesQuery.error && (
-            <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
-              <div className='flex items-center'>
-                <div className='text-red-600 text-sm'>
-                  Erreur lors du chargement des comptes bancaires
+          <div className='fixed bottom-4 right-4 z-50 space-y-2'>
+            {comptesBancairesQuery.error && (
+              <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
+                <div className='flex items-center'>
+                  <div className='text-red-600 text-sm'>
+                    Erreur lors du chargement des comptes bancaires
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          {provincesQuery.error && (
-            <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
-              <div className='flex items-center'>
-                <div className='text-red-600 text-sm'>
-                  Erreur lors du chargement des provinces
+            )}
+            {provincesQuery.error && (
+              <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
+                <div className='flex items-center'>
+                  <div className='text-red-600 text-sm'>
+                    Erreur lors du chargement des provinces
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          {villesQuery.error && (
-            <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
-              <div className='flex items-center'>
-                <div className='text-red-600 text-sm'>
-                  Erreur lors du chargement des villes
+            )}
+            {villesQuery.error && (
+              <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
+                <div className='flex items-center'>
+                  <div className='text-red-600 text-sm'>
+                    Erreur lors du chargement des villes
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
     </div>
   );
 }
 
-export default CreerBonAPayerPage;
+export default CreeBonAPayerPage;

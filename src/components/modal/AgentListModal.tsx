@@ -23,7 +23,6 @@ export default function AgentListModal({
 
   useEffect(() => {
     if (visible) {
-      // Simule une API
       setAgents([
         {
           id: 1001,

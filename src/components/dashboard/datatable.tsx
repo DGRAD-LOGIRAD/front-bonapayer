@@ -19,11 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatDate } from '@/lib/utils';
+
 
 export type BonAPayerSummary = {
   id: number;
-  documentId: string;
+  etat: number;
   numero: string;
   motif: string;
   montant: number;
@@ -45,7 +45,7 @@ export type BonAPayerSummary = {
 };
 
 interface DatatableProps {
-  data: BonAPayerSummary[];
+  data?: BonAPayerSummary[];
   title?: string;
   description?: string;
   ctaLabel?: string;
@@ -55,7 +55,7 @@ interface DatatableProps {
 const columnHelper = createColumnHelper<BonAPayerSummary>();
 
 function Datatable({
-  data,
+  data = [],
   title = 'Derniers bons à payer',
   description = 'Les 10 derniers bons à payer enregistrés dans le système',
   ctaLabel = 'Fractionner un bon à payer',
@@ -103,15 +103,13 @@ function Datatable({
         },
       }),
       columnHelper.accessor('centre', {
-        header: 'Centre',
+        header: 'Site',
         cell: info => {
-          const centre = info.getValue();
+          const centre = info.row.original.centre;
           return (
             <div className='space-y-1'>
-              <div className='font-medium text-wrap'>{centre.nom}</div>
-              <div className='text-sm text-muted-foreground text-wrap'>
-                {centre.ville.nom} / {centre.ville.province.nom}
-              </div>
+              <div className='font-medium text-wrap text-sm'> <span className='font-normal'>{centre?.nom}</span></div>
+
             </div>
           );
         },
@@ -119,7 +117,7 @@ function Datatable({
       columnHelper.accessor('createdAt', {
         header: 'Date de création',
         cell: info => (
-          <div className='text-wrap'>{formatDate(info.getValue())}</div>
+          <div className='text-wrap'>{(info.getValue())}</div>
         ),
       }),
       columnHelper.display({
@@ -177,9 +175,9 @@ function Datatable({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -209,7 +207,7 @@ function Datatable({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columns?.length}
                   className='h-24 text-center'
                 >
                   Aucun bon à payer trouvé.
