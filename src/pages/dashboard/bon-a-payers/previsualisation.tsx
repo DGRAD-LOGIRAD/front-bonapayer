@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useState, Component, type ErrorInfo, type ReactNode } from 'react';
+import { useState, Component, type ReactNode } from 'react';
 import { useBonAPayer } from '@/hooks/useBonAPayer';
 import { Loading } from '@/components/ui/loading';
 import { ErrorDebug } from '@/components/ui/error-debug';
@@ -73,7 +73,8 @@ class PDFErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch() {
+    // Error boundary - errors are handled by getDerivedStateFromError
   }
 
   render() {
@@ -209,7 +210,8 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
       </View>
 
       <Text style={styles.title}>
-        BON A PAYER N° {data.refernceBonMere}/{data.typeBonPayer === 1 ? 'A' : 'B'}
+        BON A PAYER N° {data.refernceBonMere}/
+        {data.typeBonPayer === 1 ? 'A' : 'B'}
       </Text>
 
       <View style={styles.section}>
@@ -394,9 +396,10 @@ export default function PrevisualisationPage() {
               onClick={() => setActiveTab(`fraction-${index}`)}
               className={`
                 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2
-                ${activeTab === `fraction-${index}`
-                  ? 'bg-primary text-white'
-                  : 'text-gray-600 hover:bg-gray-200'
+                ${
+                  activeTab === `fraction-${index}`
+                    ? 'bg-primary text-white'
+                    : 'text-gray-600 hover:bg-gray-200'
                 }
                 whitespace-nowrap
               `}

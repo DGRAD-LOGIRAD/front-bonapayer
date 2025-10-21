@@ -72,7 +72,7 @@ export function LoginForm() {
           global: data.message || 'Erreur inattendue, veuillez réessayer.',
         });
       }
-    } catch (err) {
+    } catch {
       setErrorFields({
         global: 'Erreur réseau, veuillez réessayer.',
       });

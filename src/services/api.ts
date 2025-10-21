@@ -214,6 +214,10 @@ export interface CreateBonPayerPayload {
 }
 
 export interface BonPayerSearchData {
+  [x: string]: string | number;
+  fkContribuable: string | number;
+  fkVille: string | number;
+  fkProvince: string | number;
   numero: string;
   fkActe: string;
   fkDevise: string;

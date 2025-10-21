@@ -63,7 +63,7 @@ export const useModuleStore = create<ModuleStore>(set => ({
         : [];
 
       set({ modules });
-    } catch (err) {
+    } catch {
       set({ modules: [] });
     } finally {
       set({ loading: false });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,7 +31,6 @@ import {
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { X, Search, RefreshCw } from 'lucide-react';
-import { users } from '@/data/user';
 import {
   type CreateBonPayerPayload,
   type CompteBancaire,
@@ -44,6 +43,11 @@ import { useProvinces } from '@/hooks/useProvinces';
 import { useVilles } from '@/hooks/useVilles';
 import { useSites } from '@/hooks/useSites';
 import { CompteSelectionModal } from '@/components/ui/compte-selection-modal';
+
+interface User {
+  fkUserCreate: string;
+  userName: string;
+}
 
 const bonAPayerSchema = z.object({
   numero: z.string().min(1, 'Le numéro est requis'),
@@ -92,15 +96,14 @@ const defaultValues: BonAPayerFormValues = {
   fkProvince: '',
 };
 
-
 const COMPTE_PRINCIPAL_FIXE = '00011-00101-000001291036-41';
 
 function CreeBonAPayerPage() {
   const navigate = useNavigate();
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedVille, setSelectedVille] = useState<string>('');
   const [selectedSite, setSelectedSite] = useState<string>('37783');
-
 
   const [selectedCompteA, setSelectedCompteA] = useState<CompteBancaire | null>(
     null
@@ -110,12 +113,13 @@ function CreeBonAPayerPage() {
   );
   const [selectedDevise, setSelectedDevise] = useState<string>('');
 
-
   const [isCompteAModalOpen, setIsCompteAModalOpen] = useState(false);
   const [isCompteBModalOpen, setIsCompteBModalOpen] = useState(false);
 
   const [searchCode, setSearchCode] = useState<string>('');
-  const [foundBonPayer, setFoundBonPayer] = useState<BonPayerSearchData | null>(null);
+  const [foundBonPayer, setFoundBonPayer] = useState<BonPayerSearchData | null>(
+    null
+  );
   const [isFormPrefilled, setIsFormPrefilled] = useState<boolean>(false);
 
   const createBonAPayerMutation = useCreateBonAPayer();
@@ -125,29 +129,21 @@ function CreeBonAPayerPage() {
   const villesQuery = useVilles(selectedProvince);
   const sitesQuery = useSites(selectedVille.toString());
 
-
-  const getFilteredSites = () => {
-
-
-
+  const getFilteredSites = useCallback(() => {
     if (!sitesQuery.data || sitesQuery.data.length === 0) {
       return [];
     }
 
-
-    let apiSites = sitesQuery.data;
-
+    const apiSites = sitesQuery.data;
 
     const filteredApiSites = apiSites.filter(
       site => !site.intitule.toLowerCase().includes('centre 1')
     );
 
-
     const allSites = [...filteredApiSites];
 
-
     return allSites.sort((a, b) => a.intitule.localeCompare(b.intitule));
-  };
+  }, [sitesQuery.data]);
 
   const form = useForm<BonAPayerFormValues>({
     resolver: zodResolver(bonAPayerSchema),
@@ -160,19 +156,19 @@ function CreeBonAPayerPage() {
     setSelectedSite(defaultValues.fkSite);
   }, []);
 
-
   React.useEffect(() => {
     if (sitesQuery.data && selectedSite) {
       const availableSites = getFilteredSites();
-      const isCurrentSiteValid = availableSites.some(site => site.id.toString() === selectedSite);
+      const isCurrentSiteValid = availableSites.some(
+        site => site.id.toString() === selectedSite
+      );
 
       if (!isCurrentSiteValid) {
-
         setSelectedSite('37783');
         form.setValue('fkSite', '37783');
       }
     }
-  }, [sitesQuery.data, selectedVille, selectedSite, form]);
+  }, [sitesQuery.data, selectedVille, selectedSite, form, getFilteredSites]);
 
   const handleProvinceChange = (provinceId: string) => {
     setSelectedProvince(provinceId);
@@ -276,14 +272,14 @@ function CreeBonAPayerPage() {
           prefillFormWithSearchData(response.data);
           toast.success('Bon à payer trouvé et formulaire pré-rempli');
         } else {
-          toast.error('Il n\'existe pas de bon à payer pour ce numéro');
+          toast.error("Il n'existe pas de bon à payer pour ce numéro");
         }
       },
       onError: error => {
         if (error.message && error.message.includes('404')) {
-          toast.error('Il n\'existe pas de bon à payer pour ce numéro');
+          toast.error("Il n'existe pas de bon à payer pour ce numéro");
         } else if (error.message && error.message.includes('non trouvé')) {
-          toast.error('Il n\'existe pas de bon à payer pour ce numéro');
+          toast.error("Il n'existe pas de bon à payer pour ce numéro");
         } else {
           toast.error('Erreur lors de la recherche du bon à payer');
         }
@@ -300,6 +296,7 @@ function CreeBonAPayerPage() {
     setSelectedProvince('');
     setSelectedVille('');
     setSelectedSite('37783');
+    setUsers([]); // Réinitialiser la liste des utilisateurs
   };
 
   const prefillFormWithSearchData = (data: BonPayerSearchData) => {
@@ -308,31 +305,47 @@ function CreeBonAPayerPage() {
         const [datePart] = dateString.split(' ');
         const [day, month, year] = datePart.split('/');
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      } catch (error) {
+      } catch {
         return '';
       }
     };
 
-    const parsedData = {
+    const parsedData: Record<string, string> = {
       numero: data.numero || '',
       montant: data.montant ? data.montant.toString() : '',
-      dateEcheance: data.dateEcheance ? convertDateFormat(data.dateEcheance) : '',
+      dateEcheance: data.dateEcheance
+        ? convertDateFormat(data.dateEcheance)
+        : '',
       motifPenalite: data.motif_penalite || '',
-      refenceLogirad: data.id || '',
+      refenceLogirad: data.id ? String(data.id) : '',
       fkActe: data.fkActe.toString() || '',
       fkDevise: data.fkDevise.toString() as 'USD' | 'CDF',
       fkNotePerception: data.fkNotePerception.toString() || '',
       fkCompte: data.fkCompte.toString() || '',
+      fkContribuable: data.fkContribuable.toString() || '',
+      fkProvince: data?.fkProvince ? String(data.fkProvince) : '',
+      fkVille: data?.fkVille ? String(data.fkVille) : '',
+      fkUserCreate: data?.fkUserCreate ? String(data.fkUserCreate) : '',
+      userName: data?.userName ? String(data.userName) : '',
     };
 
     Object.entries(parsedData).forEach(([key, value]) => {
       if (value) {
-        form.setValue(key as keyof BonAPayerFormValues, value);
+        form.setValue(key as keyof BonAPayerFormValues, String(value));
       }
     });
 
     if (parsedData.fkDevise) {
       setSelectedDevise(parsedData.fkDevise);
+    }
+    if (parsedData.fkUserCreate && parsedData.userName) {
+      // Créer une liste figée avec seulement l'utilisateur trouvé
+      setUsers([
+        {
+          fkUserCreate: parsedData.fkUserCreate,
+          userName: parsedData.userName,
+        },
+      ]);
     }
 
     setIsFormPrefilled(true);
@@ -357,7 +370,7 @@ function CreeBonAPayerPage() {
           toast.error(errorMessage);
         }
       },
-      onError: error => {
+      onError: () => {
         toast.error('Erreur lors de la création du bon à payer');
       },
     });
@@ -386,10 +399,10 @@ function CreeBonAPayerPage() {
                   <Input
                     id='searchCode'
                     value={searchCode}
-                    onChange={(e) => setSearchCode(e.target.value)}
+                    onChange={e => setSearchCode(e.target.value)}
                     placeholder='Ex: BF25AA00581'
                     disabled={searchBonAPayerMutation.isPending}
-                    onKeyDown={(e) => {
+                    onKeyDown={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         handleSearch();
@@ -401,7 +414,9 @@ function CreeBonAPayerPage() {
               <Button
                 type='button'
                 onClick={handleSearch}
-                disabled={searchBonAPayerMutation.isPending || !searchCode.trim()}
+                disabled={
+                  searchBonAPayerMutation.isPending || !searchCode.trim()
+                }
                 className='mb-0'
               >
                 {searchBonAPayerMutation.isPending ? (
@@ -409,7 +424,9 @@ function CreeBonAPayerPage() {
                 ) : (
                   <Search className='h-4 w-4 mr-2' />
                 )}
-                {searchBonAPayerMutation.isPending ? 'Recherche...' : 'Rechercher'}
+                {searchBonAPayerMutation.isPending
+                  ? 'Recherche...'
+                  : 'Rechercher'}
               </Button>
               {foundBonPayer && (
                 <Button
@@ -439,7 +456,10 @@ function CreeBonAPayerPage() {
                     </div>
                     <div className='flex justify-between'>
                       <span className='font-medium'>Montant:</span>
-                      <span>{foundBonPayer.montant.toLocaleString()} {foundBonPayer.fkDevise}</span>
+                      <span>
+                        {foundBonPayer.montant.toLocaleString()}{' '}
+                        {foundBonPayer.fkDevise}
+                      </span>
                     </div>
                     <div className='flex justify-between'>
                       <span className='font-medium'>Date d'échéance:</span>
@@ -447,7 +467,9 @@ function CreeBonAPayerPage() {
                     </div>
                     <div className='flex justify-between'>
                       <span className='font-medium'>Motif:</span>
-                      <span className='text-right max-w-xs truncate'>{foundBonPayer.motif_penalite}</span>
+                      <span className='text-right max-w-xs truncate'>
+                        {foundBonPayer.motif_penalite}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -720,10 +742,14 @@ function CreeBonAPayerPage() {
                   <FieldLabel>Devise</FieldLabel>
                   <FieldContent>
                     {selectedDevise ? (
-                      <div className={`flex items-center gap-2 p-3 border rounded-md ${isFormPrefilled ? 'bg-gray-100' : 'bg-gray-50'}`}>
+                      <div
+                        className={`flex items-center gap-2 p-3 border rounded-md ${isFormPrefilled ? 'bg-gray-100' : 'bg-gray-50'}`}
+                      >
                         <Badge variant='outline'>{selectedDevise}</Badge>
                         <span className='text-sm text-gray-600'>
-                          {isFormPrefilled ? '(Pré-rempli par la recherche)' : '(Figée par le premier compte sélectionné)'}
+                          {isFormPrefilled
+                            ? '(Pré-rempli par la recherche)'
+                            : '(Figée par le premier compte sélectionné)'}
                         </span>
                       </div>
                     ) : (
@@ -802,6 +828,8 @@ function CreeBonAPayerPage() {
                     <Input
                       id='fkContribuable'
                       {...form.register('fkContribuable')}
+                      disabled={isFormPrefilled}
+                      className={isFormPrefilled ? 'bg-gray-50' : ''}
                     />
                     <FieldError
                       errors={
@@ -894,22 +922,27 @@ function CreeBonAPayerPage() {
                       value={form.watch('userName')}
                       onValueChange={value => {
                         form.setValue('userName', value);
-                        const user = users.find(u => u.username === value);
+                        const user = users.find(
+                          (u: User) => u.userName === value
+                        );
                         if (user) {
                           form.setValue('fkUserCreate', user.fkUserCreate);
                         }
                       }}
+                      disabled={isFormPrefilled}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={isFormPrefilled ? 'bg-gray-50' : ''}
+                      >
                         <SelectValue placeholder='Sélectionner un ordonnateur' />
                       </SelectTrigger>
                       <SelectContent>
-                        {users.map(user => (
+                        {users.map((user: User) => (
                           <SelectItem
                             key={user.fkUserCreate}
-                            value={user.username}
+                            value={user.userName}
                           >
-                            {user.username}
+                            {user.userName}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1045,7 +1078,7 @@ function CreeBonAPayerPage() {
                   ? 'Fractionnement en cours...'
                   : foundBonPayer
                     ? `Fractionner le bon ${foundBonPayer.id}`
-                    : 'Recherchez d\'abord un bon à payer'}
+                    : "Recherchez d'abord un bon à payer"}
               </Button>
             </div>
           </form>
@@ -1075,36 +1108,36 @@ function CreeBonAPayerPage() {
       {(comptesBancairesQuery.error ||
         provincesQuery.error ||
         villesQuery.error) && (
-          <div className='fixed bottom-4 right-4 z-50 space-y-2'>
-            {comptesBancairesQuery.error && (
-              <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
-                <div className='flex items-center'>
-                  <div className='text-red-600 text-sm'>
-                    Erreur lors du chargement des comptes bancaires
-                  </div>
+        <div className='fixed bottom-4 right-4 z-50 space-y-2'>
+          {comptesBancairesQuery.error && (
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
+              <div className='flex items-center'>
+                <div className='text-red-600 text-sm'>
+                  Erreur lors du chargement des comptes bancaires
                 </div>
               </div>
-            )}
-            {provincesQuery.error && (
-              <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
-                <div className='flex items-center'>
-                  <div className='text-red-600 text-sm'>
-                    Erreur lors du chargement des provinces
-                  </div>
+            </div>
+          )}
+          {provincesQuery.error && (
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
+              <div className='flex items-center'>
+                <div className='text-red-600 text-sm'>
+                  Erreur lors du chargement des provinces
                 </div>
               </div>
-            )}
-            {villesQuery.error && (
-              <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
-                <div className='flex items-center'>
-                  <div className='text-red-600 text-sm'>
-                    Erreur lors du chargement des villes
-                  </div>
+            </div>
+          )}
+          {villesQuery.error && (
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg'>
+              <div className='flex items-center'>
+                <div className='text-red-600 text-sm'>
+                  Erreur lors du chargement des villes
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

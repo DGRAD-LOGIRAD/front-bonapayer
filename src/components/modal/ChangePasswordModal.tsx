@@ -75,7 +75,7 @@ const ChangePasswordModal: React.FC = () => {
           body.message || body.description_erreur || 'Erreur inattendue.'
         );
       }
-    } catch (err) {
+    } catch {
       setError('Erreur réseau, veuillez réessayer.');
     } finally {
       setLoading(false);

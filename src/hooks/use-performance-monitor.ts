@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 
-export const usePerformanceMonitor = (componentName: string) => {
+export const usePerformanceMonitor = () => {
   const startTime = useRef<number>(Date.now());
 
   const endMeasurement = () => {
