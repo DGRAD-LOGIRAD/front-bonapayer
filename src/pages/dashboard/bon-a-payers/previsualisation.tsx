@@ -1,9 +1,10 @@
 import { useParams } from 'react-router-dom';
-import { useState, Component, type ReactNode } from 'react';
+import { useState, Component, type ReactNode, useEffect } from 'react';
 import { useBonAPayer } from '@/hooks/useBonAPayer';
 import { Loading } from '@/components/ui/loading';
 import { ErrorDebug } from '@/components/ui/error-debug';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Document,
   Page,
@@ -197,6 +198,75 @@ const styles = StyleSheet.create({
   },
 });
 
+const PDFViewerSkeleton = () => (
+  <div className='h-full w-full bg-gray-50 border border-gray-200 rounded-lg overflow-hidden'>
+    {/* Header skeleton */}
+    <div className='bg-white border-b border-gray-200 p-4'>
+      <div className='flex items-center justify-between mb-4'>
+        <Skeleton className='h-6 w-48' />
+        <Skeleton className='h-8 w-24' />
+      </div>
+      <Skeleton className='h-4 w-32 mb-2' />
+      <Skeleton className='h-3 w-64' />
+    </div>
+
+    {/* PDF content skeleton */}
+    <div className='p-6 space-y-4'>
+      {/* Document header */}
+      <div className='space-y-3'>
+        <Skeleton className='h-4 w-40' />
+        <Skeleton className='h-8 w-64 mx-auto' />
+      </div>
+
+      {/* Information sections */}
+      <div className='space-y-4'>
+        {/* Section 1 */}
+        <div className='border border-gray-200 rounded'>
+          <div className='bg-gray-50 p-2 border-b border-gray-200'>
+            <Skeleton className='h-4 w-48' />
+          </div>
+          <div className='p-3 space-y-2'>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className='flex'>
+                <Skeleton className='h-3 w-32 mr-4' />
+                <Skeleton className='h-3 w-48' />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 2 */}
+        <div className='border border-gray-200 rounded'>
+          <div className='bg-gray-50 p-2 border-b border-gray-200'>
+            <Skeleton className='h-4 w-56' />
+          </div>
+          <div className='p-3 space-y-2'>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className='flex'>
+                <Skeleton className='h-3 w-40 mr-4' />
+                <Skeleton className='h-3 w-52' />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Signature area */}
+      <div className='flex justify-end mt-8'>
+        <Skeleton className='h-4 w-20' />
+      </div>
+    </div>
+
+    {/* Loading indicator */}
+    <div className='absolute inset-0 bg-white/80 flex items-center justify-center'>
+      <div className='text-center'>
+        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2'></div>
+        <Skeleton className='h-4 w-32 mx-auto' />
+      </div>
+    </div>
+  </div>
+);
+
 const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
   <Document>
     <Page size='A4' style={styles.page}>
@@ -205,7 +275,7 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           <Text style={styles.republic}>REPUBLIQUE DEMOCRATIQUE DU CONGO</Text>
         </View>
         <View style={styles.logoContainer}>
-          <Image style={styles.logo} src='/logo-dgrad.jpg' />
+          <Image style={styles.logo} src='/logo-dgrad.png' />
         </View>
       </View>
 
@@ -351,8 +421,20 @@ export default function PrevisualisationPage() {
   const { documentId } = useParams<{ documentId: string }>();
   const bonAPayerId = documentId ? parseInt(documentId, 10) : 0;
   const [activeTab, setActiveTab] = useState<string>('fraction-0');
+  const [isPdfLoading, setIsPdfLoading] = useState<boolean>(true);
 
   const { data, isLoading, isError, error } = useBonAPayer(bonAPayerId);
+
+  // Réinitialiser l'état de chargement du PDF quand on change d'onglet
+  useEffect(() => {
+    setIsPdfLoading(true);
+    // Simuler un délai de chargement pour le PDF
+    const timer = setTimeout(() => {
+      setIsPdfLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   if (isLoading) {
     return (
@@ -404,14 +486,19 @@ export default function PrevisualisationPage() {
                 whitespace-nowrap
               `}
             >
-              Type {fraction.typeBonPayer || 0} :
+              Type {fraction.typeBonPayer === 1 ? 'A' : 'B'} :
               {fraction.typeBonPayer === 1 ? '2/3' : '1/3'}
             </Button>
           ))}
         </div>
       </div>
 
-      <div className='h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-160px)]'>
+      <div className='h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-160px)] relative'>
+        {isPdfLoading && (
+          <div className='absolute inset-0 z-10'>
+            <PDFViewerSkeleton />
+          </div>
+        )}
         <PDFErrorBoundary>
           <PDFViewer width='100%' height='100%' className='w-full h-full'>
             <BonAPayerOfficielPDF data={currentData} />

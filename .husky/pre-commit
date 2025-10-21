@@ -3,7 +3,7 @@ npx lint-staged
 
 # Vérifier que tous les fichiers sont formatés correctement
 # echo "🔍 Vérification du formatage..."
-# pnpm run format:check
+pnpm run format:check
 
 # Vérifier que le linting passe
 echo "🔍 Vérification du linting..."
@@ -11,4 +11,4 @@ pnpm run lint
 
 # Vérifier que le build passe
 #echo "🔨 Vérification du build..."
-#npm run build
+pnpm run build

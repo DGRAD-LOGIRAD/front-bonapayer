@@ -112,6 +112,7 @@ function CreeBonAPayerPage() {
     null
   );
   const [selectedDevise, setSelectedDevise] = useState<string>('');
+  const [selectedUser, setSelectedUser] = useState<string>('');
 
   const [isCompteAModalOpen, setIsCompteAModalOpen] = useState(false);
   const [isCompteBModalOpen, setIsCompteBModalOpen] = useState(false);
@@ -155,6 +156,25 @@ function CreeBonAPayerPage() {
     setSelectedVille(defaultValues.fkVille);
     setSelectedSite(defaultValues.fkSite);
   }, []);
+
+  // Synchroniser les valeurs du formulaire avec l'état local
+  const fkUserCreate = form.watch('fkUserCreate');
+  const userName = form.watch('userName');
+
+  React.useEffect(() => {
+    // Mettre à jour l'état local du Select
+    if (fkUserCreate) {
+      setSelectedUser(fkUserCreate);
+    }
+
+    if (fkUserCreate && userName && users.length > 0) {
+      const userExists = users.some(user => user.fkUserCreate === fkUserCreate);
+      if (!userExists) {
+        // Ajouter l'utilisateur à la liste s'il n'existe pas
+        setUsers(prev => [...prev, { fkUserCreate, userName }]);
+      }
+    }
+  }, [fkUserCreate, userName, users, form]);
 
   React.useEffect(() => {
     if (sitesQuery.data && selectedSite) {
@@ -297,6 +317,7 @@ function CreeBonAPayerPage() {
     setSelectedVille('');
     setSelectedSite('37783');
     setUsers([]); // Réinitialiser la liste des utilisateurs
+    setSelectedUser(''); // Réinitialiser l'état local du Select
   };
 
   const prefillFormWithSearchData = (data: BonPayerSearchData) => {
@@ -346,6 +367,8 @@ function CreeBonAPayerPage() {
           userName: parsedData.userName,
         },
       ]);
+      // Mettre à jour l'état local du Select
+      setSelectedUser(parsedData.fkUserCreate);
     }
 
     setIsFormPrefilled(true);
@@ -919,14 +942,15 @@ function CreeBonAPayerPage() {
                   <FieldLabel>Ordonnateur</FieldLabel>
                   <FieldContent>
                     <Select
-                      value={form.watch('userName')}
+                      value={selectedUser}
                       onValueChange={value => {
-                        form.setValue('userName', value);
+                        setSelectedUser(value);
                         const user = users.find(
-                          (u: User) => u.userName === value
+                          (u: User) => u.fkUserCreate === value
                         );
                         if (user) {
                           form.setValue('fkUserCreate', user.fkUserCreate);
+                          form.setValue('userName', user.userName);
                         }
                       }}
                       disabled={isFormPrefilled}
@@ -940,7 +964,7 @@ function CreeBonAPayerPage() {
                         {users.map((user: User) => (
                           <SelectItem
                             key={user.fkUserCreate}
-                            value={user.userName}
+                            value={user.fkUserCreate}
                           >
                             {user.userName}
                           </SelectItem>
