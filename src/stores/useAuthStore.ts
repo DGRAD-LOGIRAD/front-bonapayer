@@ -34,13 +34,20 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       showChangePasswordModal: false,
       passwordModalShown: false,
-      login: userData => set({ user: userData }),
-      logout: () =>
+      login: userData => {
+        set({ user: userData });
+        // Stocker le token dans le localStorage
+        localStorage.setItem('authToken', userData.token);
+      },
+      logout: () => {
         set({
           user: null,
           showChangePasswordModal: false,
           passwordModalShown: false,
-        }),
+        });
+        // Supprimer le token du localStorage
+        localStorage.removeItem('authToken');
+      },
       setShowChangePasswordModal: show =>
         set({ showChangePasswordModal: show }),
       updateUserStatus: status =>

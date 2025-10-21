@@ -22,6 +22,8 @@ import Loading from '../loading/Loading';
 //import { useModalStore } from '@/stores/useModalStore';
 import { useModuleStore } from '@/stores/useModulStore';
 import { useFilterStore } from '@/stores/FilterStore';
+import ModuleModal from '../modal/ModuleModal';
+import { useModalStore } from '@/stores/useModalStore';
 
 export type Modul = {
   id: number;
@@ -47,6 +49,7 @@ export default function DatatableModul() {
   const { modules, fetchModules } = useModuleStore();
   const { search, etatFilter, setSearch, setEtatFilter } = useFilterStore();
   // const setShowModal = useModalStore(state => state.setShowModuleModal);
+  const setShowModal = useModalStore(state => state.setShowModuleModal);
 
   useEffect(() => {
     const load = async () => {
@@ -173,7 +176,10 @@ export default function DatatableModul() {
             Gérez les modules et leurs droits
           </p>
         </div>
-        <Button className='bg-primary text-white hover:bg-primary/90'>
+        <Button
+          onClick={() => setShowModal(true)}
+          className='bg-primary text-white hover:bg-primary/90'
+        >
           Créer un module
         </Button>
       </div>
@@ -280,6 +286,7 @@ export default function DatatableModul() {
           Suivant
         </button>
       </div>
+      <ModuleModal />
     </div>
   );
 }

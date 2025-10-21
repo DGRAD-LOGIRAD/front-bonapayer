@@ -59,6 +59,8 @@ export function LoginForm() {
           password: password,
         });
 
+        localStorage.setItem('authToken', userData.token);
+
         navigate('/dashboard');
 
         if (userData.changePassword) {

@@ -4,8 +4,12 @@ import Indicateurs from '@/components/dashboard/indicateurs';
 import ChangePasswordModal from '@/components/modal/ChangePasswordModal';
 import { bonAPayers, dashboardStats } from '@/data/bon-a-payers';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useNavigate } from 'react-router';
 
 function DashboardHomePage() {
+  //const tokens = localStorage.getItem('authToken');
+  const navige = useNavigate();
+
   const {
     user,
     showChangePasswordModal,
@@ -15,6 +19,12 @@ function DashboardHomePage() {
   } = useAuthStore();
 
   useEffect(() => {
+    //alert(tokens)
+    if (!user?.token) {
+      navige('/'); // Redirigez vers la page de connexion
+      return;
+    }
+    //alert(user?.token)
     if (!user || passwordModalShown) return;
 
     const statusNumber = Number((user.status || '').trim());
@@ -23,7 +33,7 @@ function DashboardHomePage() {
       setShowChangePasswordModal(true);
       setPasswordModalShown(true);
     } else {
-      setShowChangePasswordModal(false);
+      // setShowChangePasswordModal(false);
     }
   }, [
     user,

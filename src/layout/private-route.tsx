@@ -5,8 +5,11 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import DashboardLayout from './dashboard-layout';
 
 function PrivateRoute() {
-  const isAuthenticated = useAuthStore();
-  return isAuthenticated ? <DashboardLayout /> : <Navigate to='/auth/login' />;
+  // const isAuthenticated = useAuthStore();
+  // return isAuthenticated ? <DashboardLayout /> : <Navigate to='/auth/login' />;
+  const { user } = useAuthStore();
+
+  return user?.token ? <DashboardLayout /> : <Navigate to='/auth/login' />;
 }
 
 export default PrivateRoute;
