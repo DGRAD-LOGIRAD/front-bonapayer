@@ -4,11 +4,10 @@ import Indicateurs from '@/components/dashboard/indicateurs';
 import ChangePasswordModal from '@/components/modal/ChangePasswordModal';
 import { bonAPayers, dashboardStats } from '@/data/bon-a-payers';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useNavigate } from 'react-router';
 
 function DashboardHomePage() {
   //const tokens = localStorage.getItem('authToken');
-  const navige = useNavigate();
+  //const navige = useNavigate();
 
   const {
     user,
@@ -20,10 +19,10 @@ function DashboardHomePage() {
 
   useEffect(() => {
     //alert(tokens)
-    if (!user?.token) {
+    /*  if (!user?.token) {
       navige('/'); // Redirigez vers la page de connexion
       return;
-    }
+    } */
     //alert(user?.token)
     if (!user || passwordModalShown) return;
 
