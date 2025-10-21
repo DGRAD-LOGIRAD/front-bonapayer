@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
@@ -7,8 +7,6 @@ import { useDebounce } from '@/hooks/use-debounce';
 import Datatable from '@/components/dashboard/datatable';
 import TableSkeleton from '@/components/dashboard/table-skeleton';
 import type { BonAPayerSummary } from '@/components/dashboard/datatable';
-
-
 
 function BonAPayersPage() {
   const [search, setSearch] = useState('');
@@ -30,18 +28,14 @@ function BonAPayersPage() {
     }
   );
 
-
-
-
-
   useEffect(() => {
     if (!debouncedSearch.trim()) {
-      setFilteredData(bonAPayers);
+      setFilteredData(bonAPayers || []);
       return;
     }
 
     const searchLower = debouncedSearch.toLowerCase().trim();
-    const filtered = bonAPayers.filter((item: any) => {
+    const filtered = bonAPayers?.filter((item: BonAPayerSummary) => {
       const searchableFields = [
         item.numero,
         item.assujetti.NIF,
@@ -57,12 +51,12 @@ function BonAPayersPage() {
       );
     });
 
-    setFilteredData(filtered);
+    setFilteredData(filtered || []);
   }, [debouncedSearch, bonAPayers]);
 
   useEffect(() => {
-    if (bonAPayers?.length > 0 && filteredData?.length === 0) {
-      setFilteredData(bonAPayers);
+    if (bonAPayers && bonAPayers.length > 0 && filteredData?.length === 0) {
+      setFilteredData(bonAPayers || []);
     }
   }, [bonAPayers, filteredData]);
 
@@ -80,7 +74,7 @@ function BonAPayersPage() {
           <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
           <Input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={event => setSearch(event.target.value)}
             placeholder='Rechercher par numéro, NIF, nom, motif...'
             className='pl-9'
           />
@@ -100,10 +94,10 @@ function BonAPayersPage() {
         <>
           <div className='mb-4'>
             <div className='flex items-center justify-between'>
-
               {search && (
                 <div className='text-sm text-muted-foreground'>
-                  {filteredData?.length} résultat(s) trouvé(s) sur {bonAPayers?.length}
+                  {filteredData?.length} résultat(s) trouvé(s) sur{' '}
+                  {bonAPayers?.length}
                 </div>
               )}
             </div>
