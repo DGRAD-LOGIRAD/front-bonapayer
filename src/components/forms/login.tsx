@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +55,8 @@ export function LoginForm() {
           status: data.status,
           password: password,
         });
+
+        localStorage.setItem('authToken', userData.token);
 
         navigate('/dashboard');
 

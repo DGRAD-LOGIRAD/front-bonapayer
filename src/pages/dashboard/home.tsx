@@ -10,6 +10,9 @@ import {
 import { useAuthStore } from '@/stores/useAuthStore';
 
 function DashboardHomePage() {
+  //const tokens = localStorage.getItem('authToken');
+  //const navige = useNavigate();
+
   const {
     user,
     showChangePasswordModal,
@@ -33,6 +36,12 @@ function DashboardHomePage() {
   } = useBonAPayerFractionnes();
 
   useEffect(() => {
+    //alert(tokens)
+    /*  if (!user?.token) {
+      navige('/'); // Redirigez vers la page de connexion
+      return;
+    } */
+    //alert(user?.token)
     if (!user || passwordModalShown) return;
 
     const statusNumber = Number((user.status || '').trim());
@@ -41,7 +50,7 @@ function DashboardHomePage() {
       setShowChangePasswordModal(true);
       setPasswordModalShown(true);
     } else {
-      setShowChangePasswordModal(false);
+      // setShowChangePasswordModal(false);
     }
   }, [
     user,

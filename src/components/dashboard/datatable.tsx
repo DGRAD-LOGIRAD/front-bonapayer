@@ -20,7 +20,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-
 export type BonAPayerSummary = {
   id: number;
   etat: number;
@@ -108,17 +107,17 @@ function Datatable({
           const centre = info.row.original.centre;
           return (
             <div className='space-y-1'>
-              <div className='font-medium text-wrap text-sm'> <span className='font-normal'>{centre?.nom}</span></div>
-
+              <div className='font-medium text-wrap text-sm'>
+                {' '}
+                <span className='font-normal'>{centre?.nom}</span>
+              </div>
             </div>
           );
         },
       }),
       columnHelper.accessor('createdAt', {
         header: 'Date de création',
-        cell: info => (
-          <div className='text-wrap'>{(info.getValue())}</div>
-        ),
+        cell: info => <div className='text-wrap'>{info.getValue()}</div>,
       }),
       columnHelper.display({
         id: 'actions',
@@ -175,9 +174,9 @@ function Datatable({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>

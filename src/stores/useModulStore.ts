@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from 'zustand';
 import axios from 'axios';
 
@@ -63,7 +64,7 @@ export const useModuleStore = create<ModuleStore>(set => ({
         : [];
 
       set({ modules });
-    } catch {
+    } catch (err: unknown) {
       set({ modules: [] });
     } finally {
       set({ loading: false });

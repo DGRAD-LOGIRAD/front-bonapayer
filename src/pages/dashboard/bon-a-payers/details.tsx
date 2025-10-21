@@ -99,7 +99,6 @@ function BonAPayerDetailsPage() {
                 <h1 className='text-lg sm:text-xl md:text-2xl font-semibold text-primary truncate'>
                   Bon à payer Nº {data.refernceLogirad}
                 </h1>
-
               </div>
             </div>
             <Button
@@ -247,13 +246,21 @@ function BonAPayerDetailsPage() {
                     >
                       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2'>
                         <h4 className='text-sm font-bold text-gray-900'>
-                          BON À PAYER  #{(detail as { typeBonPayer: number }).typeBonPayer === 1 ? 'A' : 'B'}
+                          BON À PAYER #
+                          {(detail as { typeBonPayer: number }).typeBonPayer ===
+                          1
+                            ? 'A'
+                            : 'B'}
                         </h4>
                         <span className='text-xs bg-gray-100 px-2 py-1 rounded font-mono self-start sm:self-auto'>
                           Type{' '}
-                          {(detail as { typeBonPayer: number }).typeBonPayer === 1 ? 'A' : 'B'} :
                           {(detail as { typeBonPayer: number }).typeBonPayer ===
-                            1
+                          1
+                            ? 'A'
+                            : 'B'}{' '}
+                          :
+                          {(detail as { typeBonPayer: number }).typeBonPayer ===
+                          1
                             ? '2/3'
                             : '1/3'}
                         </span>
@@ -290,7 +297,10 @@ function BonAPayerDetailsPage() {
                             Référence
                           </p>
                           <p className='text-xs font-mono text-gray-600 break-all'>
-                            {(detail as { refernceBonMere: string }).refernceBonMere}
+                            {
+                              (detail as { refernceBonMere: string })
+                                .refernceBonMere
+                            }
                           </p>
                         </div>
                       </div>
