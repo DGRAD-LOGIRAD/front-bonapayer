@@ -1,15 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiService, type Site } from '@/services/api';
 
-export function useSites() {
+export function useSites(idVille: string) {
   return useQuery<Site[]>({
-    queryKey: ['sites'],
+    queryKey: ['sites', idVille],
     queryFn: async () => {
-      const response = await apiService.getSites();
+      const response = await apiService.getSites(idVille);
       return response.data;
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !!idVille,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
   });

@@ -19,7 +19,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Loading from '../loading/Loading';
-//import { useModalStore } from '@/stores/useModalStore';
 import { useModuleStore } from '@/stores/useModulStore';
 import { useFilterStore } from '@/stores/FilterStore';
 import ModuleModal from '../modal/ModuleModal';
@@ -141,7 +140,6 @@ export default function DatatableModul() {
               size='sm'
               variant='outline'
               className='text-blue-600 hover:bg-blue-50 bg-transparent'
-              /*   onClick={() => setShowModal(true)} */
             >
               <Edit className='h-4 w-4' />
             </Button>

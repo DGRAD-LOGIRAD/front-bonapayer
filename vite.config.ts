@@ -2,8 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import tailwindcss from '@tailwindcss/vite';
-
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react({
@@ -20,94 +18,30 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy spécifique pour les endpoints ms_bp du backend DGRAD
-      // Front appelle: /api/ms_bp/...  →  Côté cible: /ms_bp/api/...
+      '/ms-bp/reg': {
+        target: 'https://api.dgrad.cloud',
+        changeOrigin: true,
+        secure: true,
+      },
+
       '/api/ms_bp': {
         target: 'https://api.dgrad.cloud',
         changeOrigin: true,
         secure: true,
         rewrite: path => path.replace(/^\/api\/ms_bp/, '/ms_bp/api'),
-        configure: proxy => {
-          proxy.on('error', err => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (_, req) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(
-              'Received Response from the Target:',
-              proxyRes.statusCode,
-              req.url
-            );
-          });
-        },
       },
 
       '/api-utilisateur': {
         target: 'https://api.dgrad.cloud',
         changeOrigin: true,
         secure: true,
-        configure: proxy => {
-          proxy.on('error', err => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (_, req) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(
-              'Received Response from the Target:',
-              proxyRes.statusCode,
-              req.url
-            );
-          });
-        },
       },
-      // Proxy LOGIRAD pour ms-bp/reg/api/... (bon-à-payer LOGIRAD)
-      // Front appelle: /ms-bp/reg/api/v1/bon-a-payer
-      '/ms-bp': {
-        target: 'https://api.logirad.cloud',
-        changeOrigin: true,
-        secure: true,
-        // Chemin identique, pas de réécriture nécessaire
-        rewrite: path => path,
-        configure: proxy => {
-          proxy.on('error', err => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (_, req) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(
-              'Received Response from the Target:',
-              proxyRes.statusCode,
-              req.url
-            );
-          });
-        },
-      },
+
       '/api': {
         target: 'https://api.dgrad.cloud',
         changeOrigin: true,
         secure: true,
         rewrite: path => path.replace(/^\/api/, '/api'),
-        configure: proxy => {
-          proxy.on('error', err => {
-            console.log('proxy error', err);
-          });
-          proxy.on('proxyReq', (_, req) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req) => {
-            console.log(
-              'Received Response from the Target:',
-              proxyRes.statusCode,
-              req.url
-            );
-          });
-        },
       },
     },
     allowedHosts: ['bonapayer.dgrad.cloud'],
@@ -116,7 +50,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Chunk pour les composants UI communs
           'ui-components': [
             'react-router-dom',
             'lucide-react',
@@ -125,7 +58,6 @@ export default defineConfig({
             'clsx',
             'tailwind-merge',
           ],
-          // Chunk pour les composants Radix UI
           'radix-ui': [
             '@radix-ui/react-accordion',
             '@radix-ui/react-alert-dialog',
@@ -154,20 +86,16 @@ export default defineConfig({
             '@radix-ui/react-toggle-group',
             '@radix-ui/react-tooltip',
           ],
-          // Chunk pour React Query et Axios
           'data-fetching': [
             '@tanstack/react-query',
             '@tanstack/react-query-devtools',
             'axios',
           ],
-          // Chunk pour les formulaires
           forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
-          // Chunk pour PDF
           pdf: ['@react-pdf/renderer'],
         },
       },
     },
-    // Augmenter la limite de taille des chunks
     chunkSizeWarningLimit: 1000,
   },
 });

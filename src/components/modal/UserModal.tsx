@@ -20,7 +20,6 @@ interface Agent {
 }
 
 export default function UserModal() {
-  // 🔹 Store pour gérer l'affichage
   const showModal = useModalStore(state => state.showUserModal);
   const setShowModal = useModalStore(state => state.setShowUserModal);
   const { fetchUsers } = useUserStore();
@@ -35,13 +34,11 @@ export default function UserModal() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
   const { user } = useAuthStore();
 
-  // 🔹 Charger les agents si modal visible et liste ouverte
   useEffect(() => {
     if (showModal && showAgentList) {
       setLoading(true);
@@ -50,7 +47,12 @@ export default function UserModal() {
           headers: { Authorization: 'Bearer 123' },
         })
         .then(res => setAgents(res.data.content || []))
-        .catch(err => console.error(err))
+        .catch(() =>
+          setErrors(prev => ({
+            ...prev,
+            backend: 'Impossible de charger les agents.',
+          }))
+        )
         .finally(() => setLoading(false));
     }
   }, [showModal, showAgentList]);
@@ -89,7 +91,6 @@ export default function UserModal() {
       });
   };
 
-  // 🔹 Filtrer et paginer
   const filteredAgents = agents.filter(a =>
     a.nomComplet.toLowerCase().includes(search.toLowerCase())
   );
@@ -198,7 +199,6 @@ export default function UserModal() {
           </>
         ) : (
           <>
-            {/* Liste des agents avec recherche et pagination */}
             <h2 className='text-xl font-bold text-primary mb-4 text-center'>
               Liste des Agents
             </h2>

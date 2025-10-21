@@ -40,8 +40,8 @@ export const useUserStore = create<UserStore>(set => ({
         })
       );
       set({ users: utilisateurs });
-    } catch (err) {
-      console.error('Erreur chargement utilisateurs :', err);
+    } catch {
+      set({ users: [] });
     } finally {
       set({ loading: false });
     }

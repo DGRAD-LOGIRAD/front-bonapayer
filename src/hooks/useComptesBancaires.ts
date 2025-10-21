@@ -8,8 +8,8 @@ export function useComptesBancaires() {
       const response = await apiService.getComptesBancaires();
       return response.data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
   });

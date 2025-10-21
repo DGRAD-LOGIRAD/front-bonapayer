@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from 'zustand';
 import axios from 'axios';
 
@@ -33,11 +34,10 @@ export const useModuleStore = create<ModuleStore>(set => ({
     set({ loading: true });
     try {
       const res = await axios.get(`/api-utilisateur/v1/getModule/*`, {
-        headers: { Authorization: 'Bearer 123' }, // mettre le vrai token si nécessaire
+        headers: { Authorization: 'Bearer 123' },
       });
 
       if (res.data.status !== '200') {
-        console.error('Erreur API modules :', res.data.message);
         set({ modules: [] });
         return;
       }
@@ -49,7 +49,6 @@ export const useModuleStore = create<ModuleStore>(set => ({
             etat: m.etat,
             dateCreat: m.dateCreat,
             fkUtilisateurCreat: m.fkUtilisateurCreat,
-            // parser la liste des droits JSON
             listDroit: Array.isArray(m.listDroit)
               ? m.listDroit
                   .map((droitStr: string) => {
@@ -65,8 +64,7 @@ export const useModuleStore = create<ModuleStore>(set => ({
         : [];
 
       set({ modules });
-    } catch (err) {
-      console.error('Erreur chargement modules :', err);
+    } catch (err: unknown) {
       set({ modules: [] });
     } finally {
       set({ loading: false });

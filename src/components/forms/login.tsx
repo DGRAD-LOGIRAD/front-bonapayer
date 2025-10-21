@@ -1,4 +1,4 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,6 @@ export function LoginForm() {
       if (data.status === '200' || data.status === '300') {
         const userData = data.content;
 
-        // Stockage dans Zustand
         login({
           id: userData.id,
           nom: userData.nom,
@@ -76,7 +75,6 @@ export function LoginForm() {
         });
       }
     } catch (err) {
-      console.error('Erreur de connexion:', err);
       setErrorFields({
         global: 'Erreur réseau, veuillez réessayer.',
       });

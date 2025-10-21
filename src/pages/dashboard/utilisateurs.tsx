@@ -23,7 +23,6 @@ function Utilisateurs() {
 
   return (
     <div className='bg-white p-4 rounded-lg shadow-md'>
-      {/* 🔹 Barre d’onglets */}
       <div className='flex overflow-x-auto border-b border-gray-300 no-scrollbar'>
         {tabs.map((tab, index) => (
           <button
@@ -42,7 +41,6 @@ function Utilisateurs() {
         ))}
       </div>
 
-      {/* 🔹 Contenu principal */}
       <div className='space-y-6 mt-4'>
         {selectedTab === 0 && <DataTableUser />}
         {selectedTab === 1 && <DatatableModul />}

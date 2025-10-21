@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useParams } from 'react-router-dom';
 import { useState, Component, type ErrorInfo, type ReactNode } from 'react';
 import { useBonAPayer } from '@/hooks/useBonAPayer';
@@ -35,7 +36,6 @@ interface BonAPayerData {
   numero?: string;
 }
 
-// Fonction pour formater les montants avec les bonnes devises
 const formatCurrency = (amount: number, currency: string) => {
   const formattedAmount = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -74,9 +74,7 @@ class PDFErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('PDF Error Boundary caught an error:', error, errorInfo);
-  }
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {}
 
   render() {
     if (this.state.hasError) {
@@ -136,8 +134,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logo: {
-    width: 150,
-    height: 60,
+    width: 100,
+    height: 100,
   },
   headerText: {
     flex: 1,
@@ -206,12 +204,13 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           <Text style={styles.republic}>REPUBLIQUE DEMOCRATIQUE DU CONGO</Text>
         </View>
         <View style={styles.logoContainer}>
-          <Image style={styles.logo} src='/dgrad-logo.png' />
+          <Image style={styles.logo} src='/logo-dgrad.jpg' />
         </View>
       </View>
 
       <Text style={styles.title}>
-        BON A PAYER N° {data.refernceBnp || data.numero}
+        BON A PAYER N° {data.refernceBonMere}/
+        {data.typeBonPayer === 1 ? 'A' : 'B'}
       </Text>
 
       <View style={styles.section}>
@@ -378,7 +377,6 @@ export default function PrevisualisationPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      {/* Header responsive */}
       <div className='mb-2 sm:mb-4 px-4 sm:px-0'>
         <div className='title text-center text-primary font-bold'>
           <h1 className='text-lg sm:text-xl md:text-2xl px-2'>
@@ -387,7 +385,6 @@ export default function PrevisualisationPage() {
         </div>
       </div>
 
-      {/* Navigation des fractions responsive */}
       <div className='bg-gray-100 border-b border-gray-200 px-2 sm:px-6 py-2 sm:py-3'>
         <div className='flex flex-wrap gap-2 sm:gap-4 justify-center sm:justify-start'>
           {fractions.map((fraction: BonAPayerData, index: number) => (
@@ -413,7 +410,6 @@ export default function PrevisualisationPage() {
         </div>
       </div>
 
-      {/* PDF Viewer responsive */}
       <div className='h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-160px)]'>
         <PDFErrorBoundary>
           <PDFViewer width='100%' height='100%' className='w-full h-full'>

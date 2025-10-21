@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useState } from 'react';
@@ -43,33 +44,29 @@ const ChangePasswordModal: React.FC = () => {
       const res = await axios.post(
         url,
         {
-          holdPassword: user.password, // mot de passe actuel
-          newPassword: newPassword, // nouveau mot de passe
-          id: user.id, // id utilisateur
+          holdPassword: user.password,
+          newPassword: newPassword,
+          id: user.id,
         },
         {
           headers: { Authorization: `Bearer ${user.token}` },
-          validateStatus: () => true, // on gère manuellement les statuts
+          validateStatus: () => true,
         }
       );
 
       const body = res.data;
 
-      // Gestion logique de l'API
       if (body.status === '200') {
-        // Erreur : mot de passe actuel incorrect
         setError(
           body.message ||
             body.description_erreur ||
             'Erreur lors du changement de mot de passe.'
         );
       } else if (body.status === '201') {
-        // Succès
         setSuccess(body.message || 'Mot de passe modifié avec succès ✅');
         setNewPassword('');
         setConfirm('');
 
-        // Fermer le modal après 2 secondes
         setTimeout(() => {
           setShowChangePasswordModal(false);
           setSuccess('');
@@ -80,7 +77,6 @@ const ChangePasswordModal: React.FC = () => {
         );
       }
     } catch (err) {
-      console.error('Erreur changePassword:', err);
       setError('Erreur réseau, veuillez réessayer.');
     } finally {
       setLoading(false);
@@ -90,7 +86,6 @@ const ChangePasswordModal: React.FC = () => {
   return (
     <div className='fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]'>
       <div className='bg-white p-6 rounded-2xl shadow-2xl w-[400px] relative'>
-        {/* Bouton de fermeture */}
         <button
           className='absolute top-3 right-3 text-gray-400 hover:text-gray-600'
           onClick={() => setShowChangePasswordModal(false)}
@@ -103,7 +98,6 @@ const ChangePasswordModal: React.FC = () => {
         </h2>
 
         <div className='space-y-3'>
-          {/* Nouveau mot de passe */}
           <div>
             <label className='block text-sm font-medium text-gray-600'>
               Nouveau mot de passe
@@ -121,7 +115,6 @@ const ChangePasswordModal: React.FC = () => {
             />
           </div>
 
-          {/* Confirmer mot de passe */}
           <div>
             <label className='block text-sm font-medium text-gray-600'>
               Confirmer le mot de passe
@@ -139,21 +132,18 @@ const ChangePasswordModal: React.FC = () => {
             />
           </div>
 
-          {/* Message d'erreur */}
           {error && (
             <div className='text-red-600 text-sm border border-red-300 bg-red-50 rounded-md p-2'>
               {error}
             </div>
           )}
 
-          {/* Message de succès */}
           {success && (
             <div className='text-green-600 text-sm border border-green-300 bg-green-50 rounded-md p-2'>
               {success}
             </div>
           )}
 
-          {/* Boutons */}
           <div className='flex flex-col gap-2'>
             <Button
               onClick={handleValidate}
@@ -162,14 +152,6 @@ const ChangePasswordModal: React.FC = () => {
             >
               {loading ? 'Enregistrement...' : 'Valider'}
             </Button>
-
-            {/* <button
-              onClick={() => setShowChangePasswordModal(false)}
-              disabled={loading}
-              className="w-full mt-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded transition disabled:opacity-60"
-            >
-              Annuler
-            </button> */}
           </div>
         </div>
       </div>

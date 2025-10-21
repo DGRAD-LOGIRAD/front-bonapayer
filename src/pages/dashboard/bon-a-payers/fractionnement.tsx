@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -95,7 +94,7 @@ const defaultValues: BonAPayerFormValues = {
 
 const COMPTE_PRINCIPAL_FIXE = '00011-00101-000001291036-41';
 
-function CreeBonAPayerPage() {
+function FractionnementBonAPayerPage() {
   const navigate = useNavigate();
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedVille, setSelectedVille] = useState<string>('');
@@ -164,7 +163,7 @@ function CreeBonAPayerPage() {
         form.setValue('fkSite', '37783');
       }
     }
-  }, [sitesQuery.data, selectedVille, selectedSite, form, getFilteredSites]);
+  }, [sitesQuery.data, selectedVille, selectedSite, form]);
 
   const handleProvinceChange = (provinceId: string) => {
     setSelectedProvince(provinceId);
@@ -300,7 +299,7 @@ function CreeBonAPayerPage() {
         const [datePart] = dateString.split(' ');
         const [day, month, year] = datePart.split('/');
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      } catch (error) {
+      } catch {
         return '';
       }
     };
@@ -316,7 +315,6 @@ function CreeBonAPayerPage() {
       fkActe: data.fkActe.toString() || '',
       fkDevise: data.fkDevise.toString() as 'USD' | 'CDF',
       fkNotePerception: data.fkNotePerception.toString() || '',
-      fkCompte: data.fkCompte.toString() || '',
     };
 
     Object.entries(parsedData).forEach(([key, value]) => {
@@ -1116,4 +1114,4 @@ function CreeBonAPayerPage() {
   );
 }
 
-export default CreeBonAPayerPage;
+export default FractionnementBonAPayerPage;
