@@ -84,7 +84,9 @@ function Breadcrumbs() {
 function DashboardLayout() {
   return (
     <SidebarProvider>
-      <DashboardSidebar userRole='admin' />
+      <div className='relative z-20'>
+        <DashboardSidebar userRole='admin' />
+      </div>
       <SidebarInset>
         <header className='flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 shadow-sm'>
           <SidebarTrigger className='-ml-1 hover:bg-primary/10 hover:text-primary transition-colors' />
@@ -113,6 +115,11 @@ function DashboardLayout() {
           </div>
         </main>
       </SidebarInset>
+      <footer className='fixed bottom-0 left-0 right-0 bg-black text-white py-4 px-6 z-10'>
+        <div className='max-w-7xl mx-auto text-center text-sm'>
+          &copy; {new Date().getFullYear()} DGRAD-DANTIC - Tous droits réservés
+        </div>
+      </footer>
     </SidebarProvider>
   );
 }

@@ -28,14 +28,11 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-
     this.setState({
       error,
       errorInfo,
     });
 
-    // Appeler la fonction onError si fournie
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -47,12 +44,10 @@ export class ErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      // Utiliser le fallback personnalisé si fourni
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Fallback par défaut
       return (
         <div className='min-h-screen flex items-center justify-center bg-gray-50'>
           <div className='max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center'>
@@ -105,7 +100,6 @@ export class ErrorBoundary extends Component<
   }
 }
 
-// Hook pour utiliser l'ErrorBoundary dans les composants fonctionnels
 export const useErrorHandler = () => {
   const [error, setError] = React.useState<Error | null>(null);
 

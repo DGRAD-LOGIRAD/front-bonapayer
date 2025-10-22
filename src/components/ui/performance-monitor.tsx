@@ -14,10 +14,6 @@ export function PerformanceMonitor({
   useEffect(() => {
     const loadTime = Date.now() - startTime.current;
 
-    if (import.meta.env.DEV) {
-      console.log(`🚀 ${componentName} loaded in ${loadTime}ms`);
-    }
-
     if (onLoadTime) {
       onLoadTime(loadTime);
     }

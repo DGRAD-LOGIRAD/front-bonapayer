@@ -1,20 +1,18 @@
 import { useState } from 'react';
-import DataTableUser from '@/components/dashboard/datatableuser';
 import {
-  FaKey,
-  FaShieldAlt,
   FaUser,
-  FaUserFriends,
+  FaShieldAlt,
   FaUsers,
+  FaKey,
+  FaUserFriends,
 } from 'react-icons/fa';
-import DatatableModul from '@/components/dashboard/datatablemodul';
 
-function Utilisateurs() {
+const TabMenu = () => {
   const [selectedTab, setSelectedTab] = useState<number>(0);
 
   const tabs = [
     { icon: <FaUser />, label: 'Utilisateurs' },
-    { icon: <FaShieldAlt />, label: 'Modul' },
+    { icon: <FaShieldAlt />, label: 'Privilèges' },
     { icon: <FaUsers />, label: 'Groupes' },
     { icon: <FaKey />, label: 'Utilisateur Privilège' },
     { icon: <FaUsers />, label: 'Privilège Groupes' },
@@ -23,6 +21,7 @@ function Utilisateurs() {
 
   return (
     <div className='bg-white p-4 rounded-lg shadow-md'>
+      {/* 🔹 Barre d’onglets */}
       <div className='flex overflow-x-auto border-b border-gray-300 no-scrollbar'>
         {tabs.map((tab, index) => (
           <button
@@ -31,7 +30,7 @@ function Utilisateurs() {
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200
               ${
                 selectedTab === index
-                  ? 'text-primary border-b-2 border-primary bg-blue-50'
+                  ? 'text--primary border-b-2 border-primary bg-blue-50'
                   : 'text-gray-600 hover:text-primary hover:bg-gray-100'
               }`}
           >
@@ -41,12 +40,10 @@ function Utilisateurs() {
         ))}
       </div>
 
-      <div className='space-y-6 mt-4'>
-        {selectedTab === 0 && <DataTableUser />}
-        {selectedTab === 1 && <DatatableModul />}
-      </div>
+      {/* 🔹 Contenu principal */}
+      <div className='mt-4'></div>
     </div>
   );
-}
+};
 
-export default Utilisateurs;
+export default TabMenu;

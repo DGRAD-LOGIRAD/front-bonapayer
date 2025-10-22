@@ -19,6 +19,7 @@ const Logout = forwardRef<
     }
 
     logout();
+    // localStorage.removeItem('authToken'); // ou sessionStorage.removeItem('authToken');
     navigate('/auth/login');
   };
 

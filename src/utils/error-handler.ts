@@ -8,9 +8,6 @@ export interface ApiError {
 
 export class ErrorHandler {
   static handleApiError(error: unknown, navigate: NavigateFunction) {
-    console.error('API Error:', error);
-
-    // Vérifier si c'est une erreur HTTP
     if (this.isHttpError(error)) {
       const status = this.getErrorStatus(error);
 
@@ -19,24 +16,17 @@ export class ErrorHandler {
         case 502:
         case 503:
         case 504:
-          // Erreurs serveur - rediriger vers la page 500
           navigate('/500');
           break;
         case 404:
-          // Page non trouvée - rediriger vers la page 404
           navigate('/404');
           break;
         case 401:
         case 403:
-          // Erreurs d'authentification - rediriger vers login
           navigate('/auth/login');
           break;
-        default:
-          // Autres erreurs - afficher un message d'erreur générique
-          console.error('Unhandled HTTP error:', status);
       }
     } else {
-      // Erreur non-HTTP - laisser l'ErrorBoundary gérer
       throw error;
     }
   }
@@ -70,7 +60,6 @@ export class ErrorHandler {
   }
 }
 
-// Hook pour utiliser le gestionnaire d'erreurs
 export const useErrorHandler = (navigate: NavigateFunction) => {
   const handleError = (error: unknown) => {
     ErrorHandler.handleApiError(error, navigate);

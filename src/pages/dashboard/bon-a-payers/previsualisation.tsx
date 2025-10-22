@@ -1,9 +1,10 @@
 import { useParams } from 'react-router-dom';
-import { useState, Component, type ErrorInfo, type ReactNode } from 'react';
+import { useState, Component, type ReactNode, useEffect } from 'react';
 import { useBonAPayer } from '@/hooks/useBonAPayer';
 import { Loading } from '@/components/ui/loading';
 import { ErrorDebug } from '@/components/ui/error-debug';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Document,
   Page,
@@ -35,6 +36,21 @@ interface BonAPayerData {
   numero?: string;
 }
 
+const formatCurrency = (amount: number, currency: string) => {
+  const formattedAmount = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+    currencyDisplay: 'code',
+
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+  })
+    .format(amount)
+    .replace(/,/g, ' ')
+    .replace('.', ',');
+  return formattedAmount;
+};
+
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
@@ -58,8 +74,8 @@ class PDFErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('PDF Error Boundary caught an error:', error, errorInfo);
+  componentDidCatch() {
+    // Error boundary - errors are handled by getDerivedStateFromError
   }
 
   render() {
@@ -120,8 +136,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logo: {
-    width: 150,
-    height: 60,
+    width: 100,
+    height: 100,
   },
   headerText: {
     flex: 1,
@@ -182,6 +198,75 @@ const styles = StyleSheet.create({
   },
 });
 
+const PDFViewerSkeleton = () => (
+  <div className='h-full w-full bg-gray-50 border border-gray-200 rounded-lg overflow-hidden'>
+    {/* Header skeleton */}
+    <div className='bg-white border-b border-gray-200 p-4'>
+      <div className='flex items-center justify-between mb-4'>
+        <Skeleton className='h-6 w-48' />
+        <Skeleton className='h-8 w-24' />
+      </div>
+      <Skeleton className='h-4 w-32 mb-2' />
+      <Skeleton className='h-3 w-64' />
+    </div>
+
+    {/* PDF content skeleton */}
+    <div className='p-6 space-y-4'>
+      {/* Document header */}
+      <div className='space-y-3'>
+        <Skeleton className='h-4 w-40' />
+        <Skeleton className='h-8 w-64 mx-auto' />
+      </div>
+
+      {/* Information sections */}
+      <div className='space-y-4'>
+        {/* Section 1 */}
+        <div className='border border-gray-200 rounded'>
+          <div className='bg-gray-50 p-2 border-b border-gray-200'>
+            <Skeleton className='h-4 w-48' />
+          </div>
+          <div className='p-3 space-y-2'>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className='flex'>
+                <Skeleton className='h-3 w-32 mr-4' />
+                <Skeleton className='h-3 w-48' />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 2 */}
+        <div className='border border-gray-200 rounded'>
+          <div className='bg-gray-50 p-2 border-b border-gray-200'>
+            <Skeleton className='h-4 w-56' />
+          </div>
+          <div className='p-3 space-y-2'>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className='flex'>
+                <Skeleton className='h-3 w-40 mr-4' />
+                <Skeleton className='h-3 w-52' />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Signature area */}
+      <div className='flex justify-end mt-8'>
+        <Skeleton className='h-4 w-20' />
+      </div>
+    </div>
+
+    {/* Loading indicator */}
+    <div className='absolute inset-0 bg-white/80 flex items-center justify-center'>
+      <div className='text-center'>
+        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2'></div>
+        <Skeleton className='h-4 w-32 mx-auto' />
+      </div>
+    </div>
+  </div>
+);
+
 const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
   <Document>
     <Page size='A4' style={styles.page}>
@@ -190,12 +275,13 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           <Text style={styles.republic}>REPUBLIQUE DEMOCRATIQUE DU CONGO</Text>
         </View>
         <View style={styles.logoContainer}>
-          <Image style={styles.logo} src='/dgrad-logo.png' />
+          <Image style={styles.logo} src='/logo-dgrad.png' />
         </View>
       </View>
 
       <Text style={styles.title}>
-        BON A PAYER N° {data.refernceBnp || data.numero}
+        BON A PAYER N° {data.refernceBonMere}/
+        {data.typeBonPayer === 1 ? 'A' : 'B'}
       </Text>
 
       <View style={styles.section}>
@@ -265,13 +351,10 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.labelCell]}>
-              Montant ordonnancé en chiffre / lettre:
+              Montant ordonnancé en chiffre :
             </Text>
             <Text style={[styles.tableCell, styles.valueCell]}>
-              {new Intl.NumberFormat('fr-FR', {
-                style: 'currency',
-                currency: data.fkDevise,
-              }).format(data.montant)}
+              {formatCurrency(data.montant, data.fkDevise)}
             </Text>
           </View>
           <View style={styles.tableRow}>
@@ -312,7 +395,7 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           </View>
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.labelCell]}>
-              Référence Bon à payer Parent:
+              Numéro Bon à payer LOGIRAD:
             </Text>
             <Text style={[styles.tableCell, styles.valueCell]}>
               {data.refernceBonMere || '-'}
@@ -338,8 +421,20 @@ export default function PrevisualisationPage() {
   const { documentId } = useParams<{ documentId: string }>();
   const bonAPayerId = documentId ? parseInt(documentId, 10) : 0;
   const [activeTab, setActiveTab] = useState<string>('fraction-0');
+  const [isPdfLoading, setIsPdfLoading] = useState<boolean>(true);
 
   const { data, isLoading, isError, error } = useBonAPayer(bonAPayerId);
+
+  // Réinitialiser l'état de chargement du PDF quand on change d'onglet
+  useEffect(() => {
+    setIsPdfLoading(true);
+    // Simuler un délai de chargement pour le PDF
+    const timer = setTimeout(() => {
+      setIsPdfLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   if (isLoading) {
     return (
@@ -365,37 +460,47 @@ export default function PrevisualisationPage() {
 
   return (
     <div className='min-h-screen bg-white'>
-      <div className='mb-4'>
+      <div className='mb-2 sm:mb-4 px-4 sm:px-0'>
         <div className='title text-center text-primary font-bold'>
-          <h1 className='text-2xl'>
+          <h1 className='text-lg sm:text-xl md:text-2xl px-2'>
             Visualisation des bons à payer fractionnés
           </h1>
         </div>
       </div>
-      <div className='bg-gray-100 border-b border-gray-200 px-6 py-3'>
-        <div className='flex space-x-4'>
+
+      <div className='bg-gray-100 border-b border-gray-200 px-2 sm:px-6 py-2 sm:py-3'>
+        <div className='flex flex-wrap gap-2 sm:gap-4 justify-center sm:justify-start'>
           {fractions.map((fraction: BonAPayerData, index: number) => (
             <Button
               key={fraction.id}
               variant={activeTab === `fraction-${index}` ? 'default' : 'ghost'}
               size='sm'
               onClick={() => setActiveTab(`fraction-${index}`)}
-              className={
-                activeTab === `fraction-${index}`
-                  ? 'bg-primary text-white'
-                  : 'text-gray-600'
-              }
+              className={`
+                text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2
+                ${
+                  activeTab === `fraction-${index}`
+                    ? 'bg-primary text-white'
+                    : 'text-gray-600 hover:bg-gray-200'
+                }
+                whitespace-nowrap
+              `}
             >
-              Bon à payer type {fraction.typeBonPayer || 0} (
-              {fraction.typeBonPayer === 1 ? '1/3' : '2/3'})
+              Type {fraction.typeBonPayer === 1 ? 'A' : 'B'} :
+              {fraction.typeBonPayer === 1 ? '2/3' : '1/3'}
             </Button>
           ))}
         </div>
       </div>
 
-      <div className='h-[calc(100vh-60px)]'>
+      <div className='h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] md:h-[calc(100vh-160px)] relative'>
+        {isPdfLoading && (
+          <div className='absolute inset-0 z-10'>
+            <PDFViewerSkeleton />
+          </div>
+        )}
         <PDFErrorBoundary>
-          <PDFViewer width='100%' height='100%'>
+          <PDFViewer width='100%' height='100%' className='w-full h-full'>
             <BonAPayerOfficielPDF data={currentData} />
           </PDFViewer>
         </PDFErrorBoundary>

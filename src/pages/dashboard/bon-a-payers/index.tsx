@@ -1,25 +1,64 @@
-import { useMemo, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 
-import Datatable from '@/components/dashboard/datatable';
 import { Input } from '@/components/ui/input';
-import { bonAPayers } from '@/data/bon-a-payers';
+import { useBonAPayerRegistres } from '@/hooks/useBonAPayer';
+import { useDebounce } from '@/hooks/use-debounce';
+import Datatable from '@/components/dashboard/datatable';
+import TableSkeleton from '@/components/dashboard/table-skeleton';
+import type { BonAPayerSummary } from '@/components/dashboard/datatable';
 
 function BonAPayersPage() {
   const [search, setSearch] = useState('');
+  const [filteredData, setFilteredData] = useState<BonAPayerSummary[]>([]);
 
-  const filteredBonAPayers = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return bonAPayers;
+  const debouncedSearch = useDebounce(search, 300);
 
-    return bonAPayers.filter(item => {
-      return (
-        item.numero.toLowerCase().includes(term) ||
-        item.assujetti.nom_ou_raison_sociale.toLowerCase().includes(term) ||
-        item.assujetti.NIF.toLowerCase().includes(term)
+  const {
+    data: bonAPayers,
+    isLoading,
+    error,
+    isError,
+  } = useBonAPayerRegistres(
+    { pageSize: 10, page: 1 },
+    {
+      contribuableNif: '*',
+      contribuableName: '*',
+      reference_bon_a_payer_logirad: '*',
+    }
+  );
+
+  useEffect(() => {
+    if (!debouncedSearch.trim()) {
+      setFilteredData(bonAPayers || []);
+      return;
+    }
+
+    const searchLower = debouncedSearch.toLowerCase().trim();
+    const filtered = bonAPayers?.filter((item: BonAPayerSummary) => {
+      const searchableFields = [
+        item.numero,
+        item.assujetti.NIF,
+        item.assujetti.nom_ou_raison_sociale,
+        item.motif,
+        item.centre.nom,
+        item.centre.ville.nom,
+        item.centre.ville.province.nom,
+      ];
+
+      return searchableFields.some(field =>
+        field.toLowerCase().includes(searchLower)
       );
     });
-  }, [search]);
+
+    setFilteredData(filtered || []);
+  }, [debouncedSearch, bonAPayers]);
+
+  useEffect(() => {
+    if (bonAPayers && bonAPayers.length > 0 && filteredData?.length === 0) {
+      setFilteredData(bonAPayers || []);
+    }
+  }, [bonAPayers, filteredData]);
 
   return (
     <div className='space-y-6'>
@@ -36,18 +75,42 @@ function BonAPayersPage() {
           <Input
             value={search}
             onChange={event => setSearch(event.target.value)}
-            placeholder='Rechercher par numéro ou NIF'
+            placeholder='Rechercher par numéro, NIF, nom, motif...'
             className='pl-9'
           />
         </div>
       </div>
 
-      <Datatable
-        data={filteredBonAPayers}
-        title='Tous les bons à payer'
-        description='Liste complète des bons à payer avec possibilité de recherche et consultation détaillée.'
-        ctaLabel='Fractionner un bon à payer'
-      />
+      {isLoading && <TableSkeleton />}
+
+      {isError && (
+        <div className='text-center py-8 text-red-600'>
+          <div className='text-lg'>Erreur lors du chargement</div>
+          <div className='text-sm mt-2'>{error?.message}</div>
+        </div>
+      )}
+
+      {!isLoading && !isError && bonAPayers && (
+        <>
+          <div className='mb-4'>
+            <div className='flex items-center justify-between'>
+              {search && (
+                <div className='text-sm text-muted-foreground'>
+                  {filteredData?.length} résultat(s) trouvé(s) sur{' '}
+                  {bonAPayers?.length}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Datatable
+            data={bonAPayers}
+            title='Tous les bons à payer'
+            description='Liste complète des bons à payer avec possibilité de recherche et consultation détaillée.'
+            ctaLabel='Fractionner un bon à payer'
+          />
+        </>
+      )}
     </div>
   );
 }
