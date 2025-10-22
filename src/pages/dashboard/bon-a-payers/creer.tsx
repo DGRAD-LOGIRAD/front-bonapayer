@@ -401,7 +401,7 @@ function CreeBonAPayerPage() {
 
   return (
     <div className=' '>
-      <Card className='max-w-5xl mx-auto'>
+      <Card className='container mx-auto'>
         <CardHeader>
           <CardTitle>Fractionner un bon à payer</CardTitle>
           <CardDescription>
