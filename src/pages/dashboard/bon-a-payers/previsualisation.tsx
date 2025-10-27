@@ -390,7 +390,7 @@ const BonAPayerOfficielPDF = ({ data }: { data: BonAPayerData }) => (
           <View style={styles.tableRow}>
             <Text style={[styles.tableCell, styles.labelCell]}>Type:</Text>
             <Text style={[styles.tableCell, styles.valueCell]}>
-              {data.typeBonPayer || '-'}
+              {data.typeBonPayer === 1 ? 'Bon à payer A' : 'Bon à payer B'}
             </Text>
           </View>
           <View style={styles.tableRow}>
