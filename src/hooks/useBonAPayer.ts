@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOptimistic } from 'react';
 import { apiService, type CreateBonPayerPayload } from '@/services/api';
+import type { BonAPayerSummary } from '@/components/dashboard/datatable';
 
 export const bonAPayerKeys = {
   all: ['bon-a-payers'] as const,
@@ -24,8 +26,14 @@ export function useBonAPayer(id: number) {
     enabled: !!id && id > 0,
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    retry: 2,
+    retry: (failureCount, error: any) => {
+      if (error?.status >= 500) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     retryDelay: 1000,
+    refetchOnMount: false,
   });
 }
 
@@ -35,21 +43,82 @@ export function useCreateBonAPayer() {
   return useMutation({
     mutationFn: (payload: CreateBonPayerPayload) =>
       apiService.createBonPayer(payload),
+    onMutate: async newData => {
+      await queryClient.cancelQueries({ queryKey: bonAPayerKeys.all });
+
+      const previousData = queryClient.getQueryData<BonAPayerSummary[]>(
+        bonAPayerKeys.all
+      );
+
+      const optimisticItem: BonAPayerSummary = {
+        id: Date.now(),
+        etat: 0,
+        numero: newData.numero,
+        motif: newData.motifPenalite || '',
+        montant: Number(newData.montant) || 0,
+        devise: 'CDF',
+        createdAt: new Date().toISOString(),
+        assujetti: {
+          nom_ou_raison_sociale: '',
+          NIF: '',
+        },
+        centre: {
+          nom: '',
+          ville: {
+            nom: '',
+            province: {
+              nom: '',
+            },
+          },
+        },
+      };
+
+      queryClient.setQueryData<BonAPayerSummary[]>(
+        bonAPayerKeys.all,
+        (old = []) => [optimisticItem, ...old]
+      );
+
+      return { previousData };
+    },
+    onError: (_err, _newData, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(bonAPayerKeys.all, context.previousData);
+      }
+    },
     onSuccess: data => {
       queryClient.invalidateQueries({
         queryKey: bonAPayerKeys.all,
+        refetchType: 'none',
       });
 
-      queryClient.prefetchQuery({
-        queryKey: bonAPayerKeys.details(data.idBonPayer),
-        queryFn: async () => {
-          const response = await apiService.getBonPayerDetails(data.idBonPayer);
-          return response.data;
-        },
-        staleTime: 5 * 60 * 1000,
-      });
+      const existingData = queryClient.getQueryData(
+        bonAPayerKeys.details(data.idBonPayer)
+      );
+      
+      if (!existingData) {
+        queryClient.prefetchQuery({
+          queryKey: bonAPayerKeys.details(data.idBonPayer),
+          queryFn: async () => {
+            const response = await apiService.getBonPayerDetails(data.idBonPayer);
+            return response.data;
+          },
+          staleTime: 5 * 60 * 1000,
+        });
+      }
     },
   });
+}
+
+export function useBonAPayersOptimistic(initialData: BonAPayerSummary[] = []) {
+  const { data } = useBonAPayerFractionnes();
+  const currentData = data || initialData;
+
+  const [optimisticData, addOptimistic] = useOptimistic(
+    currentData,
+    (state, newItem: BonAPayerSummary) => [newItem, ...state]
+  );
+
+  return { data: optimisticData, addOptimistic };
 }
 
 export function useRefreshBonAPayer() {
@@ -87,8 +156,14 @@ export function useBonAPayerRegistres(
     queryFn: () => apiService.getBonAPayerRegistres(pagination, filters),
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
-    retry: 2,
+    retry: (failureCount, error: any) => {
+      if (error?.status >= 500) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     retryDelay: 1000,
+    refetchOnMount: false,
   });
 }
 
@@ -127,10 +202,16 @@ export function useDashboardStats() {
         totalCDF,
       };
     },
-    staleTime: 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    retry: 2,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: (failureCount, error: any) => {
+      if (error?.status >= 500) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     retryDelay: 1000,
+    refetchOnMount: false,
   });
 }
 
@@ -139,16 +220,22 @@ export function useBonAPayerFractionnes() {
     queryKey: ['bon-a-payers-fractionnes'],
     queryFn: async () => {
       const response = await apiService.getBonAPayerRegistres(
-        { pageSize: 100, page: 1 },
+        { pageSize: 200, page: 1 },
         {}
       );
 
       return response || [];
     },
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
-    retry: 2,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: (failureCount, error: any) => {
+      if (error?.status >= 500) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     retryDelay: 1000,
+    refetchOnMount: false,
   });
 }
 
