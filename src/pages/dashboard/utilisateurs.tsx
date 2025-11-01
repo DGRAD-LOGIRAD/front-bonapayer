@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DataTableUser from '@/components/dashboard/datatableuser';
 import {
   FaKey,
@@ -10,6 +10,18 @@ import {
 import DatatableModul from '@/components/dashboard/datatablemodul';
 
 function Utilisateurs() {
+  useEffect(() => {
+    document.title = 'Utilisateurs - DGRAD';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Gestion des utilisateurs et permissions');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Gestion des utilisateurs et permissions';
+      document.head.appendChild(meta);
+    }
+  }, []);
   const [selectedTab, setSelectedTab] = useState<number>(0);
 
   const tabs = [

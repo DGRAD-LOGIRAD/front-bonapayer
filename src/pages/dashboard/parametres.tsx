@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -9,6 +10,19 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
 function ParametresPage() {
+  useEffect(() => {
+    document.title = 'Paramètres - DGRAD';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Configuration des paramètres de l\'application');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Configuration des paramètres de l\'application';
+      document.head.appendChild(meta);
+    }
+  }, []);
+
   return (
     <div className='space-y-6'>
       <div>

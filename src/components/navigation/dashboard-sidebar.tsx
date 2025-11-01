@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import {
@@ -10,6 +10,7 @@ import {
   type SidebarMenuItem as SidebarMenuItemType,
 } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { usePrefetchRoute } from '@/hooks/use-prefetch-route';
 import {
   Sidebar,
   SidebarContent,
@@ -37,16 +38,21 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const { prefetchRoute } = usePrefetchRoute();
 
-  const menuItems = (
-    userRole === 'admin' ? ADMIN_MENU : USER_MENU
-  ) as SidebarMenuItemType[];
+  const menuItems = useMemo(
+    () => (userRole === 'admin' ? ADMIN_MENU : USER_MENU) as SidebarMenuItemType[],
+    [userRole]
+  );
 
-  const hasSubItems = (
-    item: SidebarMenuItemType
-  ): item is SidebarMenuItemType & {
-    items: SidebarMenuItemType[];
-  } => Array.isArray(item.items) && item.items.length > 0;
+  const hasSubItems = useCallback(
+    (
+      item: SidebarMenuItemType
+    ): item is SidebarMenuItemType & {
+      items: SidebarMenuItemType[];
+    } => Array.isArray(item.items) && item.items.length > 0,
+    []
+  );
 
   const isActive = useCallback(
     (href: string) => href !== '#' && location.pathname === href,
@@ -65,18 +71,21 @@ export function DashboardSidebar({
       .map(item => item.label);
 
     setExpandedItems(activeParents);
-  }, [location.pathname, menuItems, hasActiveSubItem]);
+  }, [location.pathname, menuItems, hasActiveSubItem, hasSubItems]);
 
-  const toggleExpanded = (label: string) => {
+  const toggleExpanded = useCallback((label: string) => {
     setExpandedItems(prev =>
       prev.includes(label)
         ? prev.filter(item => item !== label)
         : [...prev, label]
     );
-  };
+  }, []);
 
-  const isParentActive = (item: SidebarMenuItemType) =>
-    hasSubItems(item) ? false : isActive(item.href);
+  const isParentActive = useCallback(
+    (item: SidebarMenuItemType) =>
+      hasSubItems(item) ? false : isActive(item.href),
+    [hasSubItems, isActive]
+  );
 
   return (
     <Sidebar className='bg-primary text-primary-foreground'>
@@ -153,6 +162,9 @@ export function DashboardSidebar({
                                     <Link
                                       to={subItem.href}
                                       className='flex items-center gap-3'
+                                      onMouseEnter={() =>
+                                        prefetchRoute(subItem.href)
+                                      }
                                     >
                                       <SubIcon className='h-4 w-4' />
                                       <span className='font-medium'>
@@ -175,6 +187,9 @@ export function DashboardSidebar({
                         <Link
                           to={item.href}
                           className='flex items-center gap-3'
+                          onMouseEnter={() =>
+                            item.href !== '#' && prefetchRoute(item.href)
+                          }
                         >
                           <Icon className='h-4 w-4' />
                           <span className='font-medium'>{item.label}</span>

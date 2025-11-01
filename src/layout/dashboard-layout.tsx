@@ -2,6 +2,7 @@
 
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Home, User } from 'lucide-react';
+import { PageTransition } from '@/components/ui/page-transition';
 
 import { DashboardSidebar } from '@/components/navigation/dashboard-sidebar';
 import {
@@ -109,9 +110,11 @@ function DashboardLayout() {
             </div>
           </div>
         </header>
-        <main className='flex-1 p-6 bg-muted/30 min-h-[calc(100vh-4rem)]'>
+        <main className='flex-1 p-6 bg-muted/30 min-h-[calc(100vh-4rem)] pb-24'>
           <div className='max-w-7xl mx-auto'>
-            <Outlet />
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
           </div>
         </main>
       </SidebarInset>

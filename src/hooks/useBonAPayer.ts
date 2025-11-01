@@ -23,9 +23,9 @@ export function useBonAPayer(id: number) {
       const response = await apiService.getBonPayerDetails(id);
       return response.data;
     },
-    enabled: !!id && id > 0,
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
+    enabled: !!id && id > 0 && !isNaN(id),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: (failureCount, error: any) => {
       if (error?.status >= 500) {
         return false;
@@ -33,7 +33,9 @@ export function useBonAPayer(id: number) {
       return failureCount < 2;
     },
     retryDelay: 1000,
-    refetchOnMount: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
@@ -135,10 +137,17 @@ export function usePrefetchBonAPayer() {
   const queryClient = useQueryClient();
 
   return (id: number) => {
+    if (!id || id <= 0 || isNaN(id)) return;
+    
     queryClient.prefetchQuery({
       queryKey: bonAPayerKeys.details(id),
-      queryFn: () => apiService.getBonPayerDetails(id),
-      staleTime: 5 * 60 * 1000,
+      queryFn: async () => {
+        const response = await apiService.getBonPayerDetails(id);
+        return response.data;
+      },
+      staleTime: 2 * 60 * 1000,
+    }).catch(() => {
+      // Ignorer les erreurs de prefetch silencieusement
     });
   };
 }
@@ -154,8 +163,8 @@ export function useBonAPayerRegistres(
   return useQuery({
     queryKey: bonAPayerKeys.registres(pagination, filters),
     queryFn: () => apiService.getBonAPayerRegistres(pagination, filters),
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: (failureCount, error: any) => {
       if (error?.status >= 500) {
         return false;
@@ -163,7 +172,9 @@ export function useBonAPayerRegistres(
       return failureCount < 2;
     },
     retryDelay: 1000,
-    refetchOnMount: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
@@ -211,7 +222,9 @@ export function useDashboardStats() {
       return failureCount < 2;
     },
     retryDelay: 1000,
-    refetchOnMount: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
@@ -226,7 +239,7 @@ export function useBonAPayerFractionnes() {
 
       return response || [];
     },
-    staleTime: 1 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: (failureCount, error: any) => {
       if (error?.status >= 500) {
@@ -235,7 +248,9 @@ export function useBonAPayerFractionnes() {
       return failureCount < 2;
     },
     retryDelay: 1000,
-    refetchOnMount: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
