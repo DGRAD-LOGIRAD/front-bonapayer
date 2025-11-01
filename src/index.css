@@ -20,7 +20,7 @@
   --accent-foreground: #1e9df1;
   --destructive: #f4212e;
   --destructive-foreground: #ffffff;
-  --border: #9ca3af;
+  --border: #6b7280;
   --input: #f7f9fa;
   --ring: #1da1f2;
   --chart-1: #1e9df1;
@@ -34,7 +34,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e3ecf6;
   --sidebar-accent-foreground: #1e9df1;
-  --sidebar-border: #e1e8ed;
+  --sidebar-border: #d1d5db;
   --sidebar-ring: #1da1f2;
   --font-sans: Open Sans, sans-serif;
   --font-serif: Georgia, serif;
@@ -86,7 +86,7 @@
   --accent-foreground: #1c9cf0;
   --destructive: #f4212e;
   --destructive-foreground: #ffffff;
-  --border: #6b7280;
+  --border: #9ca3af;
   --input: #22303c;
   --ring: #1da1f2;
   --chart-1: #1e9df1;
@@ -100,7 +100,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #061622;
   --sidebar-accent-foreground: #1c9cf0;
-  --sidebar-border: #38444d;
+  --sidebar-border: #4b5563;
   --sidebar-ring: #1da1f2;
   --font-sans: Open Sans, sans-serif;
   --font-serif: Georgia, serif;
@@ -190,9 +190,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   .container {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }

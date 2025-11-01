@@ -82,13 +82,13 @@ export function LoginForm() {
   };
 
   return (
-    <Card className='bg-white shadow-2xl'>
-      <CardContent className='p-8 space-y-6'>
-        <p className='text-gray-700 text-center'>
+    <Card className='bg-white shadow-2xl w-full border-0 rounded-xl sm:rounded-2xl'>
+      <CardContent className='p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-5 md:space-y-6'>
+        <p className='text-gray-700 text-center text-sm sm:text-base'>
           Veuillez vous connecter ci-dessous pour accéder à votre compte.
         </p>
 
-        <form onSubmit={handleSubmit} className='space-y-4'>
+        <form onSubmit={handleSubmit} className='space-y-3 sm:space-y-4'>
           <div>
             <div
               className={`flex gap-0 border rounded-md overflow-hidden focus-within:ring-2 ${
@@ -99,15 +99,17 @@ export function LoginForm() {
                 type='text'
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                className='flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none'
+                className='flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none text-sm sm:text-base'
                 placeholder="Nom d'utilisateur"
               />
-              <div className='bg-gray-100 px-4 flex items-center border-l border-gray-300'>
-                <span className='text-gray-600 text-sm'>@logirad.cd</span>
+              <div className='bg-gray-100 px-2 sm:px-4 flex items-center border-l border-gray-300'>
+                <span className='text-gray-600 text-xs sm:text-sm whitespace-nowrap'>
+                  @logirad.cd
+                </span>
               </div>
             </div>
             {errorFields.username && (
-              <p className='text-red-500 text-sm mt-1'>
+              <p className='text-red-500 text-xs sm:text-sm mt-1'>
                 {errorFields.username}
               </p>
             )}
@@ -124,11 +126,11 @@ export function LoginForm() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder='••••••'
-                className='border-gray-300'
+                className='border-gray-300 text-sm sm:text-base'
               />
             </div>
             {errorFields.password && (
-              <p className='text-red-500 text-sm mt-1'>
+              <p className='text-red-500 text-xs sm:text-sm mt-1'>
                 {errorFields.password}
               </p>
             )}
@@ -137,16 +139,18 @@ export function LoginForm() {
           <Button
             type='submit'
             disabled={loading}
-            className='w-full bg-primary hover:bg-blue-700 text-white font-semibold py-6 text-base flex justify-center items-center'
+            className='w-full bg-primary hover:bg-blue-700 text-white font-semibold py-4 sm:py-5 md:py-6 text-sm sm:text-base flex justify-center items-center gap-2'
           >
             {loading ? (
               <>
-                <Loader2 className='mr-2 h-5 w-5 animate-spin' /> Connexion...
+                <Loader2 className='h-4 w-4 sm:h-5 sm:w-5 animate-spin' />
+                <span>Connexion...</span>
               </>
             ) : (
               <>
-                <ArrowRight className='mr-2 h-5 w-5' />
-                SE CONNECTER
+                <ArrowRight className='h-4 w-4 sm:h-5 sm:w-5' />
+                <span className='hidden sm:inline'>SE CONNECTER</span>
+                <span className='sm:hidden'>CONNEXION</span>
               </>
             )}
           </Button>
@@ -155,20 +159,22 @@ export function LoginForm() {
         <div className='text-center'>
           <Link
             to='/auth/forgot-password'
-            className='text-primary hover:text-blue-700 text-sm inline-flex items-center gap-1'
+            className='text-primary hover:text-blue-700 text-xs sm:text-sm inline-flex items-center gap-1 flex-wrap justify-center'
           >
             <span className='text-blue-400'>ⓘ</span>
-            Cliquer ici si vous avez oublié votre mot de passe ?
+            <span className='text-center'>
+              Cliquer ici si vous avez oublié votre mot de passe ?
+            </span>
           </Link>
         </div>
 
         {errorFields.global && (
           <div
-            className='bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-md text-sm flex items-center gap-2 transition-all duration-300 animate-fadeIn'
+            className='bg-red-50 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded-md text-xs sm:text-sm flex items-start sm:items-center gap-2 transition-all duration-300 animate-fadeIn'
             role='alert'
           >
-            <AlertCircle className='h-5 w-5 text-red-500' />
-            <span>{errorFields.global}</span>
+            <AlertCircle className='h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0 mt-0.5 sm:mt-0' />
+            <span className='break-words'>{errorFields.global}</span>
           </div>
         )}
       </CardContent>
