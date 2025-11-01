@@ -2,6 +2,7 @@
 
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Home, User } from 'lucide-react';
+import { PageTransition } from '@/components/ui/page-transition';
 
 import { DashboardSidebar } from '@/components/navigation/dashboard-sidebar';
 import {
@@ -84,7 +85,9 @@ function Breadcrumbs() {
 function DashboardLayout() {
   return (
     <SidebarProvider>
-      <DashboardSidebar userRole='admin' />
+      <div className='relative z-20'>
+        <DashboardSidebar userRole='admin' />
+      </div>
       <SidebarInset>
         <header className='flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 shadow-sm'>
           <SidebarTrigger className='-ml-1 hover:bg-primary/10 hover:text-primary transition-colors' />
@@ -107,12 +110,19 @@ function DashboardLayout() {
             </div>
           </div>
         </header>
-        <main className='flex-1 p-6 bg-muted/30 min-h-[calc(100vh-4rem)]'>
+        <main className='flex-1 p-6 bg-muted/30 min-h-[calc(100vh-4rem)] pb-24'>
           <div className='max-w-7xl mx-auto'>
-            <Outlet />
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
           </div>
         </main>
       </SidebarInset>
+      <footer className='fixed bottom-0 left-0 right-0 bg-black text-white py-4 px-6 z-10'>
+        <div className='max-w-7xl mx-auto text-center text-sm'>
+          &copy; {new Date().getFullYear()} DGRAD-DANTIC - Tous droits réservés
+        </div>
+      </footer>
     </SidebarProvider>
   );
 }

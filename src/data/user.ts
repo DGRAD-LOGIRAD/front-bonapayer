@@ -1,4 +1,3 @@
-// Interface pour les comptes bancaires
 export interface CompteBancaire {
   id: string;
   libelle: string;

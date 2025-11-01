@@ -34,6 +34,7 @@ const BonAPayersPage = lazy(
 const CreerBonAPayerPage = lazy(
   () => import('./pages/dashboard/bon-a-payers/creer.tsx')
 );
+
 const BonAPayerDetailsPage = lazy(
   () => import('./pages/dashboard/bon-a-payers/details.tsx')
 );
@@ -113,6 +114,7 @@ const router = createBrowserRouter(
               </ErrorBoundary>
             }
           />
+
           <Route
             path=':documentId'
             element={

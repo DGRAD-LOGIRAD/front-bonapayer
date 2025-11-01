@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -10,6 +11,18 @@ import { Button } from '@/components/ui/button';
 import { Mail, Phone } from 'lucide-react';
 
 function ProfilePage() {
+  useEffect(() => {
+    document.title = 'Mon Profil - DGRAD';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Gérer vos informations personnelles');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Gérer vos informations personnelles';
+      document.head.appendChild(meta);
+    }
+  }, []);
   return (
     <div className='grid gap-6 lg:grid-cols-3'>
       <Card className='lg:col-span-2'>

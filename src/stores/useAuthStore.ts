@@ -3,38 +3,61 @@ import { persist } from 'zustand/middleware';
 
 interface User {
   id: string;
-  email: string;
-  name: string;
-  role: string;
+  nom: string;
+  postnom: string;
+  login: string;
+  mail: string;
+  telephone: string;
+  sexe: string;
+  matricule: string;
+  dateNaissance: string;
+  listDroit: string[];
+  token: string;
+  status: string;
+  password: string;
 }
 
-interface AuthState {
+interface AuthStore {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (user: User) => void;
+  showChangePasswordModal: boolean;
+  passwordModalShown: boolean;
+  login: (userData: User) => void;
   logout: () => void;
-  setLoading: (loading: boolean) => void;
+  setShowChangePasswordModal: (show: boolean) => void;
+  updateUserStatus: (status: string) => void;
+  setPasswordModalShown: (shown: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<AuthStore>()(
   persist(
     set => ({
       user: null,
-      isAuthenticated: true,
-      isLoading: false,
-      login: (user: User) =>
-        set({ user, isAuthenticated: true, isLoading: false }),
-      logout: () =>
-        set({ user: null, isAuthenticated: false, isLoading: false }),
-      setLoading: (loading: boolean) => set({ isLoading: loading }),
+      showChangePasswordModal: false,
+      passwordModalShown: false,
+      login: userData => {
+        set({ user: userData });
+        // Stocker le token dans le localStorage
+        localStorage.setItem('authToken', userData.token);
+      },
+      logout: () => {
+        set({
+          user: null,
+          showChangePasswordModal: false,
+          passwordModalShown: false,
+        });
+        // Supprimer le token du localStorage
+        localStorage.removeItem('authToken');
+      },
+      setShowChangePasswordModal: show =>
+        set({ showChangePasswordModal: show }),
+      updateUserStatus: status =>
+        set(state => ({
+          user: state.user ? { ...state.user, status } : null,
+        })),
+      setPasswordModalShown: shown => set({ passwordModalShown: shown }),
     }),
     {
       name: 'auth-storage',
-      partialize: state => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
     }
   )
 );

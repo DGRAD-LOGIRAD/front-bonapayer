@@ -1,16 +1,12 @@
 import { useCallback } from 'react';
 import React from 'react';
 
-// Hook pour précharger les composants lazy
 export const usePreload = () => {
   const preloadComponent = useCallback(
     (
       importFunction: () => Promise<{ default: React.ComponentType<unknown> }>
     ) => {
-      // Précharge le composant en arrière-plan
-      importFunction().catch(error => {
-        console.warn('Preload failed:', error);
-      });
+      importFunction().catch(() => undefined);
     },
     []
   );
@@ -39,7 +35,7 @@ export const usePreload = () => {
           );
           break;
         default:
-          console.warn(`Unknown page: ${pageName}`);
+          break;
       }
     },
     [preloadComponent]
